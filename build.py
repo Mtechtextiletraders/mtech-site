@@ -97,6 +97,7 @@ def head(title, desc, rel, path, extra=""):
 <link rel="preload" href="{rel}assets/fonts/archivo-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="{rel}assets/fonts/hanken-grotesk-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="{rel}css/style.css">
+<script>try{{if(sessionStorage.getItem("pt"))document.documentElement.classList.add("pt-in")}}catch(e){{}}</script>
 {extra}</head>
 '''
 
@@ -158,6 +159,7 @@ def footer(rel):
   </div>
 </footer>
 <a class="fab" href="{wa_link('Assalam o Alaikum M Tech, I want to ask about ')}" target="_blank" rel="noopener" aria-label="Chat on WhatsApp">{ICON["wa"]}</a>
+<nav class="mbar" aria-label="Quick contact"><a class="mbar-call" href="tel:{tel(OFFICIAL)}">{ICON["ph"]}<span>Call</span></a><a class="mbar-wa" href="{wa_link('Assalam o Alaikum M Tech, I want to ask about ')}" target="_blank" rel="noopener">{ICON["wa"]}<span>WhatsApp</span></a></nav>
 <script src="{rel}js/vendor/gsap.min.js" defer></script>
 <script src="{rel}js/vendor/ScrollTrigger.min.js" defer></script>
 <script src="{rel}js/vendor/lenis.min.js" defer></script>
@@ -220,13 +222,49 @@ def cta_band(title="Looking for a machine, a part, or a buyer?", text="Tell us w
 </section>'''
 
 # ---------------------------------------------------------------- HOME
+HAS_HERO_VID = os.path.exists(os.path.join(ROOT, "assets/video/hero.mp4"))
+HERO_CLS = " has-vid" if HAS_HERO_VID else ""
+HERO_VID = ('<div class="hero-media" aria-hidden="true"><video class="hero-vid" data-d="{rel}assets/video/hero.mp4" data-m="{rel}assets/video/hero-m.mp4" poster="{rel}assets/video/hero.jpg" autoplay muted loop playsinline preload="auto"></video><div class="hero-veil"></div></div>' if HAS_HERO_VID else "")
 brand_row = lambda items: "".join(f'<span class="bm">{b}</span><i aria-hidden="true">·</i>' for b in items)
+def _a(body):
+    return f'<svg viewBox="0 0 220 150" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">{body}</svg>'
+
+JOURNEY = [
+    ("Blowroom", "Bales are opened, cleaned and blended into an even flow of cotton.",
+     _a('<rect x="14" y="70" width="46" height="56" rx="4"/><path d="M14 88h46M14 106h46"/><path d="M60 98h22"/><rect x="82" y="52" width="70" height="74" rx="6"/><circle cx="104" cy="88" r="16"/><circle cx="132" cy="88" r="10"/><path d="M152 70h22l18-18h18M174 70v56h-22"/><path d="M96 88h16M104 80v16"/><path d="M8 126h204"/>')),
+    ("Carding", "Fibres are separated one by one and condensed into a soft sliver.",
+     _a('<circle cx="96" cy="78" r="44"/><circle cx="96" cy="78" r="8"/><circle cx="40" cy="104" r="14"/><circle cx="156" cy="104" r="18"/><path d="M58 40c20-14 56-14 76 0"/><path d="M174 104h18v22"/><path d="M8 126h204M64 122h64"/><path d="M96 34v-10M140 78h10M52 78H42"/>')),
+    ("Draw frame", "Six to eight slivers are doubled and drafted for evenness.",
+     _a('<rect x="18" y="80" width="26" height="46" rx="3"/><rect x="50" y="80" width="26" height="46" rx="3"/><rect x="82" y="80" width="26" height="46" rx="3"/><path d="M31 80c0-30 60-40 90-40M63 80c0-24 40-34 58-36M95 80c0-14 16-22 26-24"/><rect x="120" y="30" width="54" height="26" rx="5"/><circle cx="134" cy="43" r="5"/><circle cx="160" cy="43" r="5"/><path d="M174 43h12v40"/><rect x="172" y="84" width="30" height="42" rx="3"/><path d="M8 126h204"/>')),
+    ("Comber", "Short fibres and neps are taken out for fine, strong counts.",
+     _a('<rect x="20" y="40" width="180" height="60" rx="8"/><circle cx="56" cy="70" r="16"/><circle cx="110" cy="70" r="16"/><circle cx="164" cy="70" r="16"/><path d="M48 62l16 16M102 62l16 16M156 62l16 16"/><path d="M40 100v26M180 100v26M8 126h204"/><path d="M56 54v-8M110 54v-8M164 54v-8"/>')),
+    ("Simplex", "Sliver is drafted into roving and given its first light twist.",
+     _a('<path d="M20 40h180M20 126h180"/>' + ''.join(f'<path d="M{34+i*30} 52l-8 20h16z"/><rect x="{27+i*30}" y="72" width="14" height="40" rx="5"/><path d="M{34+i*30} 40v12"/>' for i in range(6)))),
+    ("Ring frame", "The final draft and twist. Here the roving becomes yarn.",
+     _a('<path d="M14 34h192M14 60h192M14 126h192"/>' + ''.join(f'<circle cx="{26+i*24}" cy="47" r="7"/><path d="M{26+i*24} 60v8"/><path d="M{20+i*24} 108c0-24 4-38 6-40 2 2 6 16 6 40z"/><path d="M{26+i*24} 108v14"/>' for i in range(8)))),
+    ("Autoconer", "Yarn is cleared, spliced and wound onto export-ready cones.",
+     _a('<rect x="22" y="22" width="20" height="104" rx="3"/><rect x="178" y="22" width="20" height="104" rx="3"/><path d="M58 42l50-10v52l-50-10z"/><path d="M108 32h40v52h-40"/><circle cx="128" cy="98" r="12"/><path d="M128 110v6M110 98H50M60 112v14h-8"/><rect x="146" y="20" width="26" height="18" rx="3"/><path d="M8 126h204"/>')),
+    ("Open-end", "Rotor spinning straight from sliver, for coarser counts at speed.",
+     _a('<rect x="24" y="30" width="172" height="96" rx="8"/><circle cx="80" cy="78" r="26"/><circle cx="80" cy="78" r="10"/><path d="M80 52V30M120 50h56v56h-56z"/><path d="M134 78h28M148 64v28"/><path d="M8 126h204"/>')),
+]
+
+PROCESS = [
+    ("Blowroom", "Bales", "Clean tufts", "Compressed bales are opened, the cotton is plucked into small tufts, cleaned of trash and blended so every kilo runs the same.", "Trützschler · Rieter blowroom lines"),
+    ("Carding", "Tufts", "Card sliver", "The card separates the fibres one by one into a fine web, then gathers that web into a soft rope called sliver.", "Trützschler TC · Rieter C series"),
+    ("Draw frame", "6 to 8 slivers", "One even sliver", "Several slivers are doubled and drafted together. Thick and thin places cancel out and the fibres lie straight.", "Rieter RSB · Trützschler TD"),
+    ("Comber", "Sliver", "Combed sliver", "Short fibres and neps are combed out. What is left makes finer, stronger and cleaner yarn.", "Rieter E series · Marzoli"),
+    ("Simplex", "Sliver", "Roving", "Sliver is drawn thinner and given a light twist so it can be wound onto bobbins for the ring frame.", "Toyota FL · Zinser · Marzoli"),
+    ("Ring frame", "Roving", "Yarn", "The final draft and twist. Thousands of spindles turn roving into yarn, wound onto small cops.", "Zinser · Toyota RX · Marzoli · LMW"),
+    ("Autoconer", "Cops", "Cones", "Yarn from the cops is checked by the clearer, faults are cut and spliced, and it is wound onto large cones ready to sell.", "Murata · Schlafhorst · Savio"),
+    ("Open-end", "Sliver", "Yarn", "Rotor spinning skips the simplex and ring frame and makes coarser yarn straight from sliver, at high speed.", "Rieter R · Schlafhorst Autocoro"),
+]
+
 LINE = [("Blowroom", "Opening & cleaning"), ("Carding", "Card & web"), ("Draw frame", "Drafting"), ("Comber", "Lap & combing"),
         ("Simplex", "Roving"), ("Ring frame", "Spinning"), ("Autoconer", "Winding"), ("Open-end", "Rotor spinning")]
 
 home = f'''
-<section class="hero" id="top">
-  <div class="hero-grid-bg" aria-hidden="true"></div>
+<section class="hero{HERO_CLS}" id="top">
+  {HERO_VID}<div class="hero-grid-bg" aria-hidden="true"></div>
   <div class="wrap hero-in">
     <div class="hero-copy">
       <p class="eyebrow"><span class="dot"></span> Lahore · Faisalabad · Since 1988</p>
@@ -236,6 +274,7 @@ home = f'''
         <span class="ln"><span class="acc">the right way.</span></span>
       </h1>
       <p class="hero-sub">We specialize in buying and selling all types of new and pre-owned textile machinery. Spinning is our core, with spare parts, yarn and cotton, and complete mills alongside it.</p>
+      <ul class="hero-chips" aria-label="M Tech in numbers"><li><b>1988</b> Founded</li><li><b>50+</b> Mills traded</li><li><b>100+</b> Owners advised</li></ul>
       <div class="hero-btns">
         <a class="btn btn-pri btn-lg" href="{{rel}}services.html"><span>Our services</span>{ICON["arr"]}</a>
         <a class="btn btn-wa btn-lg" href="{wa_link('Assalam o Alaikum M Tech, I want to ask about ')}" target="_blank" rel="noopener">{ICON["wa"]}<span>WhatsApp</span></a>
@@ -275,7 +314,8 @@ home = f'''
       <h2 class="h2 reveal-lines">Four ways we work with mills</h2>
       <p class="sec-sub">One company for the machine, the parts that keep it running, the yarn it makes, and the mill itself.</p>
     </div>
-    <div class="svc-grid">
+    <p class="swipe-hint" aria-hidden="true">Swipe <svg viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M13 6l6 6-6 6"/></svg></p>
+    <div class="svc-grid swipe">
       {"".join(f'''<a class="svc-card" href="{{rel}}services/{s}.html">
         <div class="svc-img"><img src="{{rel}}assets/img/{im}" alt="" loading="lazy" width="1376" height="768"></div>
         <div class="svc-body"><span class="svc-n">0{i+1}</span><h3>{t}</h3><p>{d}</p><span class="more">Learn more {ICON["arr"]}</span></div>
@@ -284,22 +324,45 @@ home = f'''
   </div>
 </section>
 
-<section class="line-sec" id="line">
-  <div class="wrap">
-    <div class="sec-hd light">
-      <p class="eyebrow">Across the spinning line</p>
-      <h2 class="h2 reveal-lines">From the first bale to the final cone</h2>
-      <p class="sec-sub">We trade machinery and parts for every department of a spinning mill. Other departments, like weaving and processing, we handle when a client needs it.</p>
+<section class="mc" id="machine" aria-label="Inside an Autoconer winding unit">
+  <div class="mc-pin">
+    <div class="mc-bg" aria-hidden="true"></div>
+    <div class="wrap mc-in">
+      <div class="mc-copy">
+        <p class="eyebrow">Inside the machine</p>
+        <h2 class="h2">We know an Autoconer down to the last part.</h2>
+        <ol class="mc-steps">
+          <li class="mc-step"><b>01</b><span>A complete winding unit, the way it reaches your mill.</span></li>
+          <li class="mc-step"><b>02</b><span>Opened up: every part we check, value and replace.</span></li>
+          <li class="mc-step"><b>03</b><span>Splicer, clearer and drum decide your yarn quality. We source all three.</span></li>
+          <li class="mc-step"><b>04</b><span>Back together, tested, ready to run.</span></li>
+        </ol>
+        <p class="mc-hint" aria-hidden="true"><svg viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M4 12h16M8 8l-4 4 4 4M16 8l4 4-4 4"/></svg>Drag to turn the machine</p>
+      </div>
+      <div class="mc-stage" role="img" aria-label="3D model of an Autoconer winding unit opening into its parts"><div class="mc-labels" aria-hidden="true"></div><div class="mc-load" aria-hidden="true"><span></span></div></div>
     </div>
   </div>
-  <div class="line-track">
-    <svg class="thread" viewBox="0 0 1600 220" preserveAspectRatio="none" aria-hidden="true">
-      <path id="threadPath" d="M0 110 C 120 30, 220 190, 340 110 S 560 30, 680 110 S 900 190, 1020 110 S 1240 30, 1360 110 S 1520 170, 1600 110" fill="none" stroke="url(#tg)" stroke-width="3" stroke-linecap="round"/>
-      <defs><linearGradient id="tg" x1="0" x2="1"><stop offset="0" stop-color="#ffffff" stop-opacity=".2"/><stop offset=".5" stop-color="#ffffff"/><stop offset="1" stop-color="#FF8A4C"/></linearGradient></defs>
-    </svg>
-    <ol class="line-nodes">
-      {"".join(f'<li class="node"><span class="nd"><svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="4 3"/><circle cx="20" cy="20" r="6" fill="currentColor"/></svg></span><b>{a}</b><small>{b}</small></li>' for a, b in LINE)}
-    </ol>
+</section>
+
+<section class="pr" id="line" aria-label="How cotton becomes yarn">
+  <div class="pr-pin">
+    <div class="pr-stage" aria-hidden="true">
+      {"".join(f'''<video class="pr-vid" data-src="{{rel}}assets/video/p{i+1}.mp4" poster="{{rel}}assets/video/p{i+1}.jpg" muted loop playsinline preload="none"></video>''' for i in range(len(PROCESS)))}
+      <div class="pr-shade"></div>
+    </div>
+    <div class="wrap pr-in">
+      <div class="pr-hd">
+        <p class="eyebrow">How cotton becomes yarn</p>
+        <h2 class="h2">From the first bale<br>to the final cone</h2>
+      </div>
+      <div class="pr-copy">
+        {"".join(f'''<article class="pr-step"><span class="pr-n">{i+1:02d}<small>/ {len(PROCESS):02d}</small></span><h3>{t}</h3><p class="pr-state"><b>{a}</b><i aria-hidden="true">→</i><b>{z}</b></p><p class="pr-what">{d}</p><p class="pr-makes">{m}</p></article>''' for i, (t, a, z, d, m) in enumerate(PROCESS))}
+      </div>
+    </div>
+    <div class="wrap pr-rail">
+      <ol>{"".join(f'<li><span></span><b>{t}</b></li>' for t, *_ in PROCESS)}</ol>
+      <div class="pr-bar"><i></i></div>
+    </div>
   </div>
 </section>
 
@@ -559,7 +622,7 @@ NOTFOUND = pagehead("404", "This page <span class=\"acc\">is not here</span>", "
 
 def build():
     page("index.html", "M Tech Textile Traders | New & Pre-owned Textile Machinery, Lahore",
-         "M Tech Textile Traders buys and sells new and pre-owned textile machinery, spinning spare parts, yarn and cotton, and complete mills across Pakistan. Since 1988.", home, bodycls="home")
+         "M Tech Textile Traders buys and sells new and pre-owned textile machinery, spinning spare parts, yarn and cotton, and complete mills across Pakistan. Since 1988.", home, bodycls="home" + (" vidhero" if HAS_HERO_VID else ""))
     page("about.html", "About | M Tech Textile Traders", "The story of M Tech Textile Traders: a family business serving Pakistan's spinning industry since 1988.", about)
     page("services.html", "Services | M Tech Textile Traders", "Textile machinery, spinning spare parts, yarn and cotton trade, and mill sale and purchase.", services)
 
