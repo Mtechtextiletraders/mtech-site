@@ -80,6 +80,7 @@
 
   html.classList.add('js');
   gsap.registerPlugin(ScrollTrigger);
+  ScrollTrigger.config({ ignoreMobileResize: true });
 
   /* ---------- smooth scroll ---------- */
   if (typeof Lenis !== 'undefined' && matchMedia('(hover:hover)').matches) {
@@ -240,7 +241,7 @@
   }
 
   /* ---------- background gears turn with scroll ---------- */
-  document.querySelectorAll('.gear-bg').forEach((g) => gsap.to(g, { rotate: '+=120', ease: 'none', scrollTrigger: { trigger: document.body, start: 'top top', end: 'bottom bottom', scrub: 1 } }));
+  if (!matchMedia('(max-width: 760px)').matches) document.querySelectorAll('.gear-bg').forEach((g) => gsap.to(g, { rotate: '+=120', ease: 'none', scrollTrigger: { trigger: document.body, start: 'top top', end: 'bottom bottom', scrub: 1 } }));
 
   /* ---------- magnetic primary buttons ---------- */
   if (matchMedia('(hover:hover) and (pointer:fine)').matches) {
@@ -250,6 +251,9 @@
       b.addEventListener('pointerleave', () => { qx(0); qy(0); });
     });
   }
+
+  /* ---------- pause marquees when off-screen ---------- */
+  document.querySelectorAll('.marq').forEach((m) => new IntersectionObserver(([en]) => m.classList.toggle('off', !en.isIntersecting)).observe(m));
 
   /* ---------- mobile extras ---------- */
   const isPhone = matchMedia('(max-width: 760px)').matches;

@@ -8,8 +8,8 @@
   const small = matchMedia('(max-width: 760px)').matches;
 
   /* ---------- renderer / scene ---------- */
-  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
-  renderer.setPixelRatio(Math.min(devicePixelRatio, small ? 1.5 : 2));
+  const renderer = new THREE.WebGLRenderer({ antialias: !small, alpha: true, powerPreference: 'high-performance' });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, small ? 1.25 : 2));
   renderer.outputEncoding = THREE.sRGBEncoding;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.0;
