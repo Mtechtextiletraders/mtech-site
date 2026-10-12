@@ -1,3 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /mtech-panel/
+Disallow: /api/
 Sitemap: https://mtechtextiletraders.com/sitemap.xml

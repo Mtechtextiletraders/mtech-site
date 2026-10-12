@@ -72,7 +72,7 @@ TEAM = [
 BRANDS = ["Rieter", "Trützschler", "Toyota", "Murata", "Schlafhorst", "Savio", "Zinser", "Marzoli", "Suessen", "Saurer",
           "LMW", "Howa", "Ohara", "Crosrol", "Platt", "Volkmann", "SSM", "Hara Shokki", "Jingwei", "Vouk"]
 
-NAV = [("index.html", "Home"), ("about.html", "About"), ("services.html", "Services"), ("team.html", "Team"), ("contact.html", "Contact")]
+NAV = [("index.html", "Home"), ("about.html", "About"), ("services.html", "Services"), ("stock.html", "Stock"), ("team.html", "Team"), ("contact.html", "Contact")]
 
 def head(title, desc, rel, path, extra=""):
     canon = SITE + "/" + ("" if path == "index.html" else path)
@@ -144,6 +144,7 @@ def footer(rel):
     <div><h4>Services</h4><ul>{svc}</ul></div>
     <div><h4>Company</h4><ul>
       <li><a href="{rel}about.html">About M Tech</a></li>
+      <li><a href="{rel}stock.html">Machinery stock</a></li>
       <li><a href="{rel}team.html">Our team</a></li>
       <li><a href="{CEO_SITE}" target="_blank" rel="noopener">Abdul Rasheed Gill</a></li>
       <li><a href="{rel}contact.html">Contact</a></li></ul></div>
@@ -168,15 +169,19 @@ def footer(rel):
 </html>
 '''
 
-def page(path, title, desc, body, active=None, bodycls=""):
+def page(path, title, desc, body, active=None, bodycls="", rel=None, extra="", scripts="", sitemap=True):
     depth = path.count("/")
-    rel = "../" * depth
+    rel = "../" * depth if rel is None else rel
     body = body.replace("{rel}", rel)
-    out = head(title, desc, rel, path) + f'<body class="{bodycls}">\n' + header(rel, active or path) + f'<main id="main">\n{body}\n</main>\n' + footer(rel)
+    ft = footer(rel)
+    if scripts:
+        ft = ft.replace("</body>", scripts.replace("{rel}", rel) + "\n</body>")
+    out = head(title, desc, rel, path, extra) + f'<body class="{bodycls}">\n' + header(rel, active or path) + f'<main id="main">\n{body}\n</main>\n' + ft
     full = os.path.join(ROOT, path)
     os.makedirs(os.path.dirname(full), exist_ok=True)
     open(full, "w").write(out)
-    PAGES.append(path)
+    if sitemap:
+        PAGES.append(path)
 
 PAGES = []
 
@@ -616,6 +621,64 @@ contact = pagehead("Contact", "Talk to us <span class=\"acc\">directly</span>",
 </section>
 '''
 
+
+# ---------------------------------------------------------------- STOCK
+def stock_head(crumbs_html, eyebrow, title_html, lead_html, actions=""):
+    return f'''<section class="phead stk-head">
+  <div class="gear-bg" aria-hidden="true">{gear_svg()}</div>
+  <div class="wrap phead-in">
+    <nav class="crumbs" aria-label="Breadcrumb">{crumbs_html}</nav>
+    <p class="eyebrow">{eyebrow}</p>
+    <h1 class="h1 stk-h1">{title_html}</h1>
+    <p class="lead">{lead_html}</p>
+    {actions}
+  </div>
+</section>'''
+
+STOCK_SCRIPTS = '<script src="{rel}js/stock.js" defer></script>'
+PDF_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19h14"/></svg>'
+
+stock_index = stock_head('<a href="{rel}index.html">Home</a> <span>/</span> <span aria-current="page">Machinery stock</span>',
+    "Machinery stock", 'Machinery <span class="acc">in stock</span>',
+    "What we have right now, department by department. Open a folder for pictures and details of every machine, or download its stock list as a PDF.") + f'''
+<section class="sec stk-sec">
+  <div class="wrap">
+    <div class="stk-folders" id="stkFolders" aria-live="polite">
+      <div class="stk-skel"></div><div class="stk-skel"></div><div class="stk-skel"></div>
+    </div>
+  </div>
+</section>
+''' + cta_band("Need a machine that is not listed?", "Stock changes every week. Tell us what you are looking for and we will check the godown and our network.")
+
+stock_folder = stock_head('<a href="/index.html">Home</a> <span>/</span> <a href="/stock.html">Machinery stock</a> <span>/</span> <span aria-current="page" id="stkCrumb">Folder</span>',
+    "Machinery stock", '<span id="stkTitle">Loading</span>', '<span id="stkLead">Pictures and details of every machine in this folder.</span>',
+    f'<div class="stk-actions"><button class="btn btn-pri btn-lg" id="stkPdf" type="button" disabled>{PDF_ICON}<span>Download PDF</span></button><a class="btn btn-ghost btn-lg" href="/stock.html"><span>All folders</span></a></div>') + '''
+<section class="sec stk-sec">
+  <div class="wrap">
+    <div class="stk-items" id="stkItems" aria-live="polite">
+      <div class="stk-skel tall"></div><div class="stk-skel tall"></div><div class="stk-skel tall"></div>
+    </div>
+  </div>
+</section>
+''' + cta_band("Interested in a machine from this list?", "Call or WhatsApp us with the machine name. Godown visits are by appointment.")
+
+stock_item = stock_head('<a href="/index.html">Home</a> <span>/</span> <a href="/stock.html">Machinery stock</a> <span>/</span> <a href="/stock.html" id="stkFolderLink">Folder</a> <span>/</span> <span aria-current="page" id="stkCrumb">Machine</span>',
+    '<span id="stkEyebrow">Machinery stock</span>', '<span id="stkTitle">Loading</span>', '<span id="stkLead"></span>') + f'''
+<section class="sec stk-sec">
+  <div class="wrap stk-detail" id="stkDetail">
+    <div class="stk-gallery" id="stkGallery"><div class="stk-skel tall"></div></div>
+    <aside class="stk-info">
+      <dl class="stk-dl" id="stkDl"></dl>
+      <div class="stk-info-btns">
+        <a class="btn btn-wa btn-lg" id="stkAsk" href="{wa_link()}" target="_blank" rel="noopener">{ICON["wa"]}<span>Ask about this machine</span></a>
+        <a class="btn btn-ghost btn-lg" id="stkBack" href="/stock.html"><span>Back to folder</span></a>
+      </div>
+    </aside>
+  </div>
+</section>
+<div class="stk-lb" id="stkLb" hidden><button class="stk-lb-x" type="button" aria-label="Close">&times;</button><button class="stk-lb-p" type="button" aria-label="Previous picture">&#8249;</button><img alt=""><button class="stk-lb-n" type="button" aria-label="Next picture">&#8250;</button></div>
+'''
+
 NOTFOUND = pagehead("404", "This page <span class=\"acc\">is not here</span>", "The link may be old or mistyped.") + '''
 <section class="sec"><div class="wrap" style="display:flex;gap:12px;flex-wrap:wrap">
 <a class="btn btn-pri" href="/index.html"><span>Go to home</span></a><a class="btn btn-ghost" href="/contact.html"><span>Contact us</span></a></div></section>'''
@@ -664,6 +727,9 @@ def build():
     page("team.html", "Team | M Tech Textile Traders", "Meet Abdul Rasheed Gill and his four sons, the family behind M Tech Textile Traders.", team)
     for t in TEAM:
         member_page(t)
+    page("stock.html", "Machinery Stock | M Tech Textile Traders", "Textile machinery in stock with M Tech Textile Traders, by department: pictures, details and downloadable stock lists.", stock_index, scripts=STOCK_SCRIPTS)
+    page("stock-folder.html", "Machinery Stock | M Tech Textile Traders", "Machinery stock with pictures and details.", stock_folder, active="stock.html", rel="/", scripts=STOCK_SCRIPTS, sitemap=False, bodycls="stk-page")
+    page("stock-item.html", "Machinery Stock | M Tech Textile Traders", "Machinery stock with pictures and details.", stock_item, active="stock.html", rel="/", scripts=STOCK_SCRIPTS, sitemap=False, bodycls="stk-page")
     page("contact.html", "Contact | M Tech Textile Traders", f"Call or WhatsApp M Tech Textile Traders on {OFFICIAL}. Office in Manga Mandi, Lahore; warehouse in Faisalabad.", contact)
 
     # 404 with absolute paths
@@ -672,7 +738,7 @@ def build():
 
     urls = "".join(f"<url><loc>{SITE}/{'' if p == 'index.html' else p}</loc></url>" for p in PAGES)
     open(os.path.join(ROOT, "sitemap.xml"), "w").write(f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{urls}</urlset>\n')
-    open(os.path.join(ROOT, "robots.txt"), "w").write(f"User-agent: *\nAllow: /\nSitemap: {SITE}/sitemap.xml\n")
+    open(os.path.join(ROOT, "robots.txt"), "w").write(f"User-agent: *\nAllow: /\nDisallow: /mtech-panel/\nDisallow: /api/\nSitemap: {SITE}/sitemap.xml\n")
     print("built", len(PAGES), "pages")
 
 if __name__ == "__main__":
