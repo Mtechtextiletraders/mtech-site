@@ -1,0 +1,518 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Stock Panel | M Tech</title>
+<link rel="icon" href="/assets/img/favicon.png" type="image/png">
+<meta name="theme-color" content="#07123A">
+<style>
+@font-face{font-family:"Archivo";src:url(/assets/fonts/archivo-latin-600-normal.woff2) format("woff2");font-weight:600;font-display:swap}
+@font-face{font-family:"Archivo";src:url(/assets/fonts/archivo-latin-800-normal.woff2) format("woff2");font-weight:800;font-display:swap}
+@font-face{font-family:"Hanken";src:url(/assets/fonts/hanken-grotesk-latin-400-normal.woff2) format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:"Hanken";src:url(/assets/fonts/hanken-grotesk-latin-600-normal.woff2) format("woff2");font-weight:600;font-display:swap}
+:root{--blue:#0033F8;--blue-50:#EEF2FF;--blue-100:#DCE4FF;--navy:#07123A;--ink:#0B1430;--mute:#55607E;--line:#E2E7F2;--bg:#F5F7FC;--red:#C42B2B;--red-50:#FDEEEE;--orange:#D04A00;--green:#1A8A4A;--r:14px;--f-h:"Archivo",system-ui,sans-serif;--f-b:"Hanken",system-ui,sans-serif}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;font-family:var(--f-b);font-size:16px;line-height:1.5;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:var(--f-h);color:var(--navy);margin:0;letter-spacing:-.01em;line-height:1.15}
+button,input,textarea,select{font:inherit;color:inherit}
+img{display:block;max-width:100%}
+a{color:var(--blue)}
+[hidden]{display:none!important}
+:focus-visible{outline:3px solid var(--orange);outline-offset:2px;border-radius:6px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:44px;padding:0 18px;border-radius:999px;border:1.5px solid transparent;font-family:var(--f-h);font-weight:600;font-size:14.5px;cursor:pointer;white-space:nowrap;text-decoration:none;transition:background .2s,border-color .2s,color .2s}
+.btn svg{width:18px;height:18px;flex:none}
+.btn-pri{background:var(--blue);color:#fff}.btn-pri:hover{background:#0029c7}
+.btn-ghost{background:#fff;border-color:var(--line);color:var(--navy)}.btn-ghost:hover{border-color:var(--blue);color:var(--blue)}
+.btn-danger{background:#fff;border-color:#F2C9C9;color:var(--red)}.btn-danger:hover{background:var(--red-50)}
+.btn-sm{height:36px;padding:0 14px;font-size:13.5px}
+.btn[disabled]{opacity:.55;cursor:progress}
+.icon-btn{width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:#fff;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:var(--navy);padding:0}
+.icon-btn:hover{border-color:var(--blue);color:var(--blue)}
+.icon-btn.del:hover{border-color:#F2C9C9;color:var(--red);background:var(--red-50)}
+.icon-btn svg{width:17px;height:17px}
+.icon-btn[disabled]{opacity:.35;pointer-events:none}
+label{display:block;font-weight:600;font-size:14px;color:var(--navy)}
+input[type=text],input[type=password],textarea{display:block;width:100%;margin-top:6px;height:46px;padding:0 14px;border:1.5px solid var(--line);border-radius:12px;background:#fff;font-weight:400;font-size:16px}
+textarea{height:auto;min-height:110px;padding:12px 14px;resize:vertical}
+input:focus,textarea:focus{border-color:var(--blue);outline:none;box-shadow:0 0 0 4px var(--blue-50)}
+.hint{color:var(--mute);font-size:13.5px;font-weight:400;margin:4px 0 0}
+
+/* login */
+.login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:radial-gradient(120% 70% at 85% 0%,rgba(0,51,248,.5),transparent 60%),linear-gradient(180deg,#040a22,#07123A)}
+.login-card{width:min(400px,100%);background:#fff;border-radius:20px;padding:34px 30px;box-shadow:0 30px 60px -20px rgba(0,0,0,.5)}
+.login-card img{width:84px;margin-bottom:18px}
+.login-card h1{font-size:26px;font-weight:800}
+.login-card p.sub{color:var(--mute);margin:6px 0 24px}
+.login-card form{display:flex;flex-direction:column;gap:16px}
+.login-card .btn{height:50px;margin-top:6px}
+.msg-err{background:var(--red-50);color:var(--red);border-radius:10px;padding:10px 12px;font-size:14px;margin:0}
+
+/* app */
+.top{position:sticky;top:0;z-index:20;background:var(--navy);color:#fff}
+.top-in{width:min(1100px,100% - 32px);margin:auto;height:64px;display:flex;align-items:center;gap:14px}
+.top-brand{display:flex;align-items:center;gap:10px;margin-right:auto;color:#fff;text-decoration:none}
+.top-brand img{width:46px;background:#fff;border-radius:8px;padding:4px 5px}
+.top-brand b{font-family:var(--f-h);font-weight:800;font-size:17px}
+.top-brand small{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.65)}
+.top a.lnk,.top button.lnk{color:rgba(255,255,255,.85);background:none;border:0;cursor:pointer;font-family:var(--f-h);font-weight:600;font-size:14px;text-decoration:none;padding:8px 10px;border-radius:8px}
+.top a.lnk:hover,.top button.lnk:hover{background:rgba(255,255,255,.1);color:#fff}
+main{width:min(1100px,100% - 32px);margin:28px auto 80px}
+.bar{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:22px}
+.bar h1{font-size:28px;font-weight:800}
+.bar p{margin:4px 0 0;color:var(--mute)}
+.bar-btns{display:flex;gap:10px;flex-wrap:wrap}
+.crumb{font-size:14px;margin-bottom:6px}
+.crumb button{background:none;border:0;padding:0;color:var(--blue);cursor:pointer;font-weight:600}
+.empty{background:#fff;border:1.5px dashed var(--line);border-radius:var(--r);padding:44px 24px;text-align:center;color:var(--mute)}
+.empty .btn{margin-top:16px}
+.loading{color:var(--mute);padding:30px 0;text-align:center}
+
+.fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.fcard{background:#fff;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column}
+.fcard-img{aspect-ratio:16/9;background:var(--bg);display:flex;align-items:center;justify-content:center;color:#A7B2CC;cursor:pointer;border:0;padding:0;width:100%}
+.fcard-img img{width:100%;height:100%;object-fit:cover}
+.fcard-img svg{width:40px;height:40px}
+.fcard-b{padding:16px 18px 18px;display:flex;flex-direction:column;gap:4px;flex:1}
+.fcard-b h2{font-size:19px}
+.fcard-b p{margin:0;color:var(--mute);font-size:14px}
+.fcard-acts{display:flex;gap:8px;align-items:center;margin-top:12px}
+.fcard-acts .btn{flex:1}
+
+.elist{display:flex;flex-direction:column;gap:10px}
+.erow{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:12px;display:grid;grid-template-columns:92px 1fr auto;gap:16px;align-items:center}
+.erow-img{width:92px;height:72px;border-radius:10px;background:var(--bg);overflow:hidden;display:flex;align-items:center;justify-content:center;color:#A7B2CC;position:relative}
+.erow-img img{width:100%;height:100%;object-fit:cover}
+.erow-img svg{width:28px;height:28px}
+.erow-img span{position:absolute;right:4px;bottom:4px;background:rgba(7,18,58,.8);color:#fff;font-size:11px;font-weight:600;padding:1px 6px;border-radius:99px}
+.erow-b{min-width:0}
+.erow-b h3{font-size:16.5px;overflow-wrap:anywhere}
+.erow-b p{margin:3px 0 0;color:var(--mute);font-size:14px;overflow-wrap:anywhere}
+.erow-acts{display:flex;gap:6px;align-items:center}
+.erow-n{font-family:var(--f-h);font-weight:600;font-size:12px;color:var(--orange)}
+
+/* dialogs */
+dialog{border:0;padding:0;border-radius:20px;width:min(640px,100% - 24px);max-height:calc(100dvh - 24px);box-shadow:0 30px 70px -20px rgba(7,18,58,.5);color:var(--ink)}
+dialog::backdrop{background:rgba(4,10,34,.55)}
+.dlg{display:flex;flex-direction:column;max-height:calc(100dvh - 24px)}
+.dlg-h{padding:22px 24px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.dlg-h h2{font-size:21px}
+.dlg-b{padding:20px 24px;overflow:auto;display:flex;flex-direction:column;gap:18px}
+.dlg-f{padding:14px 24px 20px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+.dlg-f .msg-err{flex-basis:100%}
+.sect-t{font-family:var(--f-h);font-weight:600;color:var(--navy);font-size:15px;margin:0}
+.flist{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.frow{display:grid;grid-template-columns:28px 1fr auto auto;gap:8px;align-items:center;background:var(--bg);border-radius:12px;padding:8px}
+.frow input[type=text]{margin:0;height:40px}
+.frow .num{font-family:var(--f-h);font-weight:600;font-size:13px;color:var(--mute);text-align:center}
+.frow .long{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--mute);white-space:nowrap;cursor:pointer}
+.frow .acts{display:flex;gap:4px}
+.frow:first-child{background:var(--blue-50)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.chip{border:1px dashed #B8C3E0;background:#fff;border-radius:999px;padding:5px 12px;font-size:13.5px;cursor:pointer;color:var(--navy)}
+.chip:hover{border-color:var(--blue);color:var(--blue)}
+.note{background:var(--blue-50);color:var(--navy);border-radius:12px;padding:10px 14px;font-size:14px;margin:0}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;margin-top:8px}
+.pbox{position:relative;aspect-ratio:1;border-radius:12px;overflow:hidden;background:var(--bg);border:2px solid transparent}
+.pbox:first-child{border-color:var(--blue)}
+.pbox img{width:100%;height:100%;object-fit:cover}
+.pbox .tag{position:absolute;left:6px;top:6px;background:var(--blue);color:#fff;font-size:11px;font-weight:600;padding:2px 7px;border-radius:99px}
+.pbox .pacts{position:absolute;inset:auto 6px 6px 6px;display:flex;justify-content:space-between}
+.pbox .pacts button{width:30px;height:30px;border-radius:8px;border:0;background:rgba(255,255,255,.92);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--navy);padding:0}
+.pbox .pacts button:hover{color:var(--blue)}
+.pbox .pacts button.x:hover{color:var(--red)}
+.pbox .pacts svg{width:15px;height:15px}
+.pbox.up{display:flex;align-items:center;justify-content:center;color:var(--mute);font-size:13px;font-weight:600;text-align:center;padding:8px}
+.pbox.up .bar-p{position:absolute;left:0;bottom:0;height:4px;background:var(--blue);transition:width .2s}
+.padd{aspect-ratio:1;border-radius:12px;border:2px dashed #B8C3E0;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;color:var(--blue);font-weight:600;font-size:13.5px}
+.padd:hover{border-color:var(--blue);background:var(--blue-50)}
+.padd svg{width:26px;height:26px}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:12px 18px;border-radius:12px;font-weight:600;font-size:14.5px;z-index:100;box-shadow:0 10px 30px -10px rgba(0,0,0,.5)}
+.toast.bad{background:var(--red)}
+@media (max-width:640px){
+  .top .lnk.hide-s{display:none}
+  .bar h1{font-size:24px}
+  .erow{grid-template-columns:72px 1fr;gap:12px}
+  .erow-img{width:72px;height:60px}
+  .erow-acts{grid-column:1/-1;justify-content:flex-end}
+  .frow{grid-template-columns:22px 1fr;}
+  .frow .long,.frow .acts{grid-column:2}
+  .frow .acts{justify-content:flex-end;margin-top:-4px}
+  .dlg-h,.dlg-b,.dlg-f{padding-left:18px;padding-right:18px}
+  .dlg-f .btn{flex:1}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<section class="login" id="vLogin" hidden>
+  <div class="login-card">
+    <img src="/assets/img/logo.png" alt="M Tech" width="84" height="44">
+    <h1>Stock Panel</h1>
+    <p class="sub">Log in to manage M Tech machinery stock.</p>
+    <form id="loginForm">
+      <label>Username<input type="text" name="username" autocomplete="username" autocapitalize="none" required></label>
+      <label>Password<input type="password" name="password" autocomplete="current-password" required></label>
+      <p class="msg-err" id="loginErr" hidden></p>
+      <button class="btn btn-pri" type="submit">Log in</button>
+    </form>
+  </div>
+</section>
+
+<!-- APP -->
+<div id="vApp" hidden>
+  <header class="top"><div class="top-in">
+    <a class="top-brand" href="#" id="homeLink"><img src="/assets/img/logo.png" alt=""><span><b>M Tech</b><small>Stock Panel</small></span></a>
+    <a class="lnk hide-s" href="/stock.html" target="_blank" rel="noopener">View website</a>
+    <button class="lnk" id="logout" type="button">Log out</button>
+  </div></header>
+  <main id="main"></main>
+</div>
+
+<!-- FOLDER DIALOG -->
+<dialog id="dFolder"><form class="dlg" method="dialog" id="fForm">
+  <div class="dlg-h"><h2 id="fTitle">New folder</h2><button class="icon-btn" type="button" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+  <div class="dlg-b">
+    <label>Folder name<input type="text" name="fname" placeholder="e.g. Blowroom, Carding, Ring Frames" required maxlength="80"></label>
+    <div>
+      <p class="sect-t">Which details should each machine in this folder have?</p>
+      <p class="hint">The first detail is used as the machine's name. Tick "Long" for a detail that needs more text, like a description.</p>
+      <div class="flist" id="fList"></div>
+      <div class="chips" id="fChips"></div>
+      <button class="btn btn-ghost btn-sm" type="button" id="fAdd" style="margin-top:10px">+ Add a detail</button>
+    </div>
+    <p class="note" id="fEditNote" hidden>Renaming a detail keeps the data already entered. Removing a detail hides it from every machine in this folder.</p>
+  </div>
+  <div class="dlg-f">
+    <p class="msg-err" id="fErr" hidden></p>
+    <button class="btn btn-ghost" type="button" data-close>Cancel</button>
+    <button class="btn btn-pri" type="submit" id="fSave">Save folder</button>
+  </div>
+</form></dialog>
+
+<!-- ENTRY DIALOG -->
+<dialog id="dEntry"><form class="dlg" method="dialog" id="eForm">
+  <div class="dlg-h"><h2 id="eTitle">Add machine</h2><button class="icon-btn" type="button" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+  <div class="dlg-b">
+    <div id="eFields" style="display:flex;flex-direction:column;gap:16px"></div>
+    <div>
+      <p class="sect-t">Pictures</p>
+      <p class="hint">The first picture is the cover. Pictures are resized automatically before upload.</p>
+      <div class="pgrid" id="ePics"></div>
+      <input type="file" id="eFile" accept="image/*" multiple hidden>
+    </div>
+  </div>
+  <div class="dlg-f">
+    <p class="msg-err" id="eErr" hidden></p>
+    <button class="btn btn-ghost" type="button" data-close>Cancel</button>
+    <button class="btn btn-pri" type="submit" id="eSave">Save machine</button>
+  </div>
+</form></dialog>
+
+<script>
+(() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const I = {
+    img: '<svg viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Zm0 10 4.5-4.5a1.5 1.5 0 0 1 2 0L16 17m-2-2 1.5-1.5a1.5 1.5 0 0 1 2 0L20 16M15 8.5h.01"/></svg>',
+    edit: '<svg viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M4 20h4L19 9l-4-4L4 16v4Zm9-13 4 4"/></svg>',
+    del: '<svg viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M5 7h14M10 11v6m4-6v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg>',
+    up: '<svg viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="m6 15 6-6 6 6"/></svg>',
+    down: '<svg viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg>',
+    left: '<svg viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="m15 6-6 6 6 6"/></svg>',
+    right: '<svg viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/></svg>',
+    x: '<svg viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M6 6l12 12M18 6 6 18"/></svg>',
+    plus: '<svg viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>',
+    ext: '<svg viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M14 4h6v6m0-6-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>',
+  };
+  const PRESETS = ['Particulars', 'Qty', 'Year', 'Make', 'Model', 'Condition', 'Description'];
+  const DEFAULT_FIELDS = [{ label: 'Particulars' }, { label: 'Qty' }, { label: 'Year' }, { label: 'Make' }, { label: 'Description', long: true }];
+
+  /* ---------- api ---------- */
+  async function api(path, opt = {}) {
+    const r = await fetch('/api/' + path, { credentials: 'same-origin', ...opt, headers: { 'content-type': 'application/json', ...(opt.headers || {}) } });
+    const d = await r.json().catch(() => ({}));
+    if (r.status === 401 && path !== 'login') { showLogin(); throw new Error(d.error || 'Please log in again.'); }
+    if (!r.ok) throw new Error(d.error || 'Something went wrong. Please try again.');
+    return d;
+  }
+  const toast = (msg, bad) => {
+    const t = document.createElement('div'); t.className = 'toast' + (bad ? ' bad' : ''); t.textContent = msg;
+    document.body.appendChild(t); setTimeout(() => t.remove(), 2600);
+  };
+  const showErr = (el, msg) => { el.textContent = msg; el.hidden = !msg; };
+
+  /* ---------- auth ---------- */
+  function showLogin() { $('#vApp').hidden = true; $('#vLogin').hidden = false; setTimeout(() => $('#loginForm [name=username]').focus(), 50); }
+  function showApp() { $('#vLogin').hidden = true; $('#vApp').hidden = false; route(); }
+  $('#loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const f = new FormData(e.target), btn = e.target.querySelector('button');
+    btn.disabled = true; showErr($('#loginErr'), '');
+    try {
+      await api('login', { method: 'POST', body: JSON.stringify({ username: f.get('username'), password: f.get('password') }) });
+      e.target.reset(); showApp();
+    } catch (er) { showErr($('#loginErr'), er.message); }
+    btn.disabled = false;
+  });
+  $('#logout').addEventListener('click', async () => { await api('logout', { method: 'POST' }).catch(() => {}); location.hash = ''; showLogin(); });
+  $('#homeLink').addEventListener('click', (e) => { e.preventDefault(); location.hash = ''; });
+
+  /* ---------- routing ---------- */
+  let folders = [], current = null;
+  addEventListener('hashchange', route);
+  function route() {
+    const m = location.hash.match(/^#\/f\/([^/]+)/);
+    m ? viewFolder(decodeURIComponent(m[1])) : viewFolders();
+  }
+  const main = $('#main');
+
+  /* ---------- folders list ---------- */
+  async function viewFolders() {
+    current = null;
+    main.innerHTML = '<p class="loading">Loading…</p>';
+    try { folders = await api('folders'); } catch (e) { main.innerHTML = `<div class="empty">${esc(e.message)}</div>`; return; }
+    main.innerHTML = `<div class="bar"><div><h1>Machinery stock</h1><p>${folders.length} ${folders.length === 1 ? 'folder' : 'folders'}. Each folder gets its own page and PDF on the website.</p></div>
+      <div class="bar-btns"><button class="btn btn-pri" id="newFolder">${I.plus}New folder</button></div></div>
+      ${folders.length ? `<div class="fgrid">${folders.map((f, i) => `
+        <article class="fcard">
+          <button class="fcard-img" data-open="${f.id}" aria-label="Open ${esc(f.name)}">${f.cover ? `<img src="/img/${f.cover}" alt="">` : I.img}</button>
+          <div class="fcard-b">
+            <h2>${esc(f.name)}</h2>
+            <p>${f.count} ${f.count === 1 ? 'machine' : 'machines'} · ${f.fields.length} details</p>
+            <div class="fcard-acts">
+              <button class="btn btn-pri btn-sm" data-open="${f.id}">Open</button>
+              <button class="icon-btn" data-up="${i}" ${i === 0 ? 'disabled' : ''} aria-label="Move up">${I.left}</button>
+              <button class="icon-btn" data-down="${i}" ${i === folders.length - 1 ? 'disabled' : ''} aria-label="Move down">${I.right}</button>
+              <button class="icon-btn" data-edit="${f.id}" aria-label="Edit folder">${I.edit}</button>
+              <button class="icon-btn del" data-del="${f.id}" aria-label="Delete folder">${I.del}</button>
+            </div>
+          </div>
+        </article>`).join('')}</div>`
+      : `<div class="empty"><p>No folders yet. Start with a folder for a department, like Blowroom.</p><button class="btn btn-pri" id="newFolder2">${I.plus}Create first folder</button></div>`}`;
+    const nf = () => openFolderDialog(null);
+    $('#newFolder').onclick = nf; if ($('#newFolder2')) $('#newFolder2').onclick = nf;
+    main.querySelectorAll('[data-open]').forEach((b) => b.onclick = () => { location.hash = '#/f/' + b.dataset.open; });
+    main.querySelectorAll('[data-edit]').forEach((b) => b.onclick = () => openFolderDialog(folders.find((f) => f.id === b.dataset.edit)));
+    main.querySelectorAll('[data-del]').forEach((b) => b.onclick = () => deleteFolder(folders.find((f) => f.id === b.dataset.del)));
+    main.querySelectorAll('[data-up],[data-down]').forEach((b) => b.onclick = async () => {
+      const i = +(b.dataset.up ?? b.dataset.down), j = b.dataset.up != null ? i - 1 : i + 1;
+      const arr = folders.slice(); [arr[i], arr[j]] = [arr[j], arr[i]];
+      try { await Promise.all(arr.map((f, k) => f.sort === k + 1 ? null : api('folders/' + f.id, { method: 'PUT', body: JSON.stringify({ sort: k + 1 }) }))); } catch (e) { toast(e.message, true); }
+      viewFolders();
+    });
+  }
+  async function deleteFolder(f) {
+    if (!confirm(`Delete the folder "${f.name}"?\n\nAll ${f.count} machines and their pictures in it will be deleted too. This cannot be undone.`)) return;
+    try { await api('folders/' + f.id, { method: 'DELETE' }); toast('Folder deleted'); location.hash = ''; viewFolders(); } catch (e) { toast(e.message, true); }
+  }
+
+  /* ---------- folder dialog ---------- */
+  const dF = $('#dFolder');
+  let fFields = [], fEditing = null;
+  function openFolderDialog(f) {
+    fEditing = f;
+    $('#fTitle').textContent = f ? 'Edit folder' : 'New folder';
+    $('#fForm').elements.fname.value = f ? f.name : '';
+    fFields = f ? f.fields.map((x) => ({ ...x })) : DEFAULT_FIELDS.map((x) => ({ ...x }));
+    $('#fEditNote').hidden = !f;
+    showErr($('#fErr'), '');
+    renderFields();
+    dF.showModal();
+    $('#fForm').elements.fname.focus();
+  }
+  function renderFields() {
+    const list = $('#fList');
+    list.innerHTML = fFields.map((x, i) => `<div class="frow">
+      <span class="num">${i + 1}</span>
+      <input type="text" value="${esc(x.label)}" data-i="${i}" placeholder="${i === 0 ? 'Machine name, e.g. Particulars' : 'Detail name'}" maxlength="60" aria-label="Detail ${i + 1}">
+      <label class="long"><input type="checkbox" data-long="${i}" ${x.long ? 'checked' : ''}> Long</label>
+      <span class="acts">
+        <button class="icon-btn" type="button" data-fu="${i}" ${i === 0 ? 'disabled' : ''} aria-label="Move up">${I.up}</button>
+        <button class="icon-btn" type="button" data-fd="${i}" ${i === fFields.length - 1 ? 'disabled' : ''} aria-label="Move down">${I.down}</button>
+        <button class="icon-btn del" type="button" data-fx="${i}" ${fFields.length === 1 ? 'disabled' : ''} aria-label="Remove">${I.x}</button>
+      </span></div>`).join('');
+    list.querySelectorAll('input[type=text]').forEach((inp) => inp.oninput = () => { fFields[+inp.dataset.i].label = inp.value; renderChips(); });
+    list.querySelectorAll('[data-long]').forEach((c) => c.onchange = () => { fFields[+c.dataset.long].long = c.checked; });
+    list.querySelectorAll('[data-fu],[data-fd]').forEach((b) => b.onclick = () => {
+      const i = +(b.dataset.fu ?? b.dataset.fd), j = b.dataset.fu != null ? i - 1 : i + 1;
+      [fFields[i], fFields[j]] = [fFields[j], fFields[i]]; renderFields();
+    });
+    list.querySelectorAll('[data-fx]').forEach((b) => b.onclick = () => { fFields.splice(+b.dataset.fx, 1); renderFields(); });
+    renderChips();
+  }
+  function renderChips() {
+    const have = new Set(fFields.map((x) => x.label.trim().toLowerCase()));
+    const c = PRESETS.filter((p) => !have.has(p.toLowerCase()));
+    $('#fChips').innerHTML = c.map((p) => `<button class="chip" type="button" data-p="${p}">+ ${p}</button>`).join('');
+    $('#fChips').querySelectorAll('[data-p]').forEach((b) => b.onclick = () => { fFields.push({ label: b.dataset.p, long: b.dataset.p === 'Description' }); renderFields(); });
+  }
+  $('#fAdd').onclick = () => { fFields.push({ label: '' }); renderFields(); const ins = $('#fList').querySelectorAll('input[type=text]'); ins[ins.length - 1].focus(); };
+  $('#fForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = e.target.elements.fname.value.trim();
+    const fields = fFields.filter((x) => x.label.trim());
+    if (!name) return showErr($('#fErr'), 'Please give the folder a name.');
+    if (!fields.length) return showErr($('#fErr'), 'Add at least one detail.');
+    if (fEditing) {
+      const removed = fEditing.fields.filter((o) => !fields.some((n) => n.id === o.id));
+      if (removed.length && fEditing.count && !confirm(`You removed: ${removed.map((r) => r.label).join(', ')}.\nThis detail will be hidden from every machine in this folder. Continue?`)) return;
+    }
+    const btn = $('#fSave'); btn.disabled = true; showErr($('#fErr'), '');
+    try {
+      const body = JSON.stringify({ name, fields });
+      const f = fEditing ? await api('folders/' + fEditing.id, { method: 'PUT', body }) : await api('folders', { method: 'POST', body });
+      dF.close(); toast(fEditing ? 'Folder saved' : 'Folder created');
+      if (fEditing) { current ? viewFolder(f.id) : viewFolders(); } else { location.hash = '#/f/' + f.id; }
+    } catch (er) { showErr($('#fErr'), er.message); }
+    btn.disabled = false;
+  });
+
+  /* ---------- folder view ---------- */
+  let entries = [];
+  async function viewFolder(id) {
+    main.innerHTML = '<p class="loading">Loading…</p>';
+    try { ({ folder: current, entries } = await api('folders/' + encodeURIComponent(id))); } catch (e) { main.innerHTML = `<div class="empty">${esc(e.message)}</div>`; return; }
+    const f = current;
+    f.count = entries.length;
+    const t = (e) => (f.fields[0] && e.data[f.fields[0].id]) || '(no name)';
+    const sub = (e) => f.fields.slice(1).filter((x) => !x.long && e.data[x.id]).map((x) => `${x.label}: ${e.data[x.id]}`).join(' · ');
+    main.innerHTML = `<div class="crumb"><button type="button" id="back">← All folders</button></div>
+      <div class="bar"><div><h1>${esc(f.name)}</h1><p>${entries.length} ${entries.length === 1 ? 'machine' : 'machines'} · Details: ${f.fields.map((x) => esc(x.label)).join(', ')}</p></div>
+      <div class="bar-btns">
+        <a class="btn btn-ghost" href="/stock/${encodeURIComponent(f.slug)}" target="_blank" rel="noopener">${I.ext}Website page</a>
+        <button class="btn btn-ghost" id="editF">${I.edit}Edit folder</button>
+        <button class="btn btn-pri" id="addE">${I.plus}Add machine</button>
+      </div></div>
+      ${entries.length ? `<div class="elist">${entries.map((e, i) => `
+        <article class="erow">
+          <div class="erow-img">${e.photos.length ? `<img src="/img/${e.photos[0]}" alt="">${e.photos.length > 1 ? `<span>${e.photos.length}</span>` : ''}` : I.img}</div>
+          <div class="erow-b"><span class="erow-n">${String(i + 1).padStart(2, '0')}</span><h3>${esc(t(e))}</h3><p>${esc(sub(e)) || '&nbsp;'}</p></div>
+          <div class="erow-acts">
+            <button class="icon-btn" data-up="${i}" ${i === 0 ? 'disabled' : ''} aria-label="Move up">${I.up}</button>
+            <button class="icon-btn" data-down="${i}" ${i === entries.length - 1 ? 'disabled' : ''} aria-label="Move down">${I.down}</button>
+            <button class="icon-btn" data-edit="${e.id}" aria-label="Edit">${I.edit}</button>
+            <button class="icon-btn del" data-del="${e.id}" aria-label="Delete">${I.del}</button>
+          </div>
+        </article>`).join('')}</div>`
+      : `<div class="empty"><p>No machines in this folder yet.</p><button class="btn btn-pri" id="addE2">${I.plus}Add first machine</button></div>`}`;
+    $('#back').onclick = () => { location.hash = ''; };
+    $('#editF').onclick = () => openFolderDialog(f);
+    $('#addE').onclick = () => openEntryDialog(null); if ($('#addE2')) $('#addE2').onclick = () => openEntryDialog(null);
+    main.querySelectorAll('[data-edit]').forEach((b) => b.onclick = () => openEntryDialog(entries.find((e) => e.id === b.dataset.edit)));
+    main.querySelectorAll('[data-del]').forEach((b) => b.onclick = async () => {
+      const e = entries.find((x) => x.id === b.dataset.del);
+      if (!confirm(`Delete "${t(e)}" and its ${e.photos.length} pictures? This cannot be undone.`)) return;
+      try { await api('entries/' + e.id, { method: 'DELETE' }); toast('Machine deleted'); viewFolder(f.id); } catch (er) { toast(er.message, true); }
+    });
+    main.querySelectorAll('[data-up],[data-down]').forEach((b) => b.onclick = async () => {
+      const i = +(b.dataset.up ?? b.dataset.down), j = b.dataset.up != null ? i - 1 : i + 1;
+      const arr = entries.slice(); [arr[i], arr[j]] = [arr[j], arr[i]];
+      try { await Promise.all(arr.map((e, k) => e.sort === k + 1 ? null : api('entries/' + e.id, { method: 'PUT', body: JSON.stringify({ sort: k + 1 }) }))); } catch (er) { toast(er.message, true); }
+      viewFolder(f.id);
+    });
+  }
+
+  /* ---------- entry dialog ---------- */
+  const dE = $('#dEntry');
+  let eEditing = null, ePhotos = [], eNew = [], uploading = 0, saved = false;
+  function openEntryDialog(e) {
+    eEditing = e; saved = false; eNew = [];
+    ePhotos = e ? e.photos.slice() : [];
+    $('#eTitle').textContent = e ? 'Edit machine' : `Add machine to ${current.name}`;
+    $('#eFields').innerHTML = current.fields.map((x, i) => `<label>${esc(x.label)}${i === 0 ? ' <span class="hint">(machine name)</span>' : ''}
+      ${x.long ? `<textarea name="f_${x.id}" maxlength="4000">${esc(e ? e.data[x.id] || '' : '')}</textarea>` : `<input type="text" name="f_${x.id}" maxlength="300" value="${esc(e ? e.data[x.id] || '' : '')}">`}</label>`).join('');
+    showErr($('#eErr'), '');
+    renderPics();
+    dE.showModal();
+    const first = $('#eFields input, #eFields textarea'); if (first) first.focus();
+  }
+  function renderPics() {
+    const g = $('#ePics');
+    g.innerHTML = ePhotos.map((k, i) => typeof k === 'string'
+      ? `<div class="pbox"><img src="/img/${k}" alt="">${i === 0 ? '<span class="tag">Cover</span>' : ''}<div class="pacts">
+          <button type="button" data-pl="${i}" aria-label="Move left" ${i === 0 ? 'hidden' : ''}>${I.left}</button>
+          <button type="button" class="x" data-px="${i}" aria-label="Remove picture">${I.x}</button>
+          <button type="button" data-pr="${i}" aria-label="Move right" ${i === ePhotos.length - 1 ? 'hidden' : ''}>${I.right}</button></div></div>`
+      : `<div class="pbox up">${k.preview ? `<img src="${k.preview}" alt="" style="position:absolute;inset:0;opacity:.35">` : ''}<span style="position:relative">${k.err ? 'Failed' : 'Uploading…'}</span><div class="bar-p" style="width:${k.p || 5}%"></div></div>`).join('')
+      + `<button type="button" class="padd" id="pAdd">${I.plus}Add pictures</button>`;
+    $('#pAdd').onclick = () => $('#eFile').click();
+    g.querySelectorAll('[data-px]').forEach((b) => b.onclick = () => { ePhotos.splice(+b.dataset.px, 1); renderPics(); });
+    g.querySelectorAll('[data-pl],[data-pr]').forEach((b) => b.onclick = () => {
+      const i = +(b.dataset.pl ?? b.dataset.pr), j = b.dataset.pl != null ? i - 1 : i + 1;
+      [ePhotos[i], ePhotos[j]] = [ePhotos[j], ePhotos[i]]; renderPics();
+    });
+  }
+  $('#eFile').addEventListener('change', async (ev) => {
+    const files = Array.from(ev.target.files || []); ev.target.value = '';
+    for (const file of files) {
+      const slot = { preview: URL.createObjectURL(file), p: 5 };
+      ePhotos.push(slot); uploading++; renderPics();
+      try {
+        const blob = await shrink(file);
+        slot.p = 40; renderPics();
+        const key = await upload(blob, (p) => { slot.p = 40 + p * 0.6; renderPics(); });
+        const i = ePhotos.indexOf(slot); if (i > -1) ePhotos[i] = key;
+        eNew.push(key);
+      } catch (er) {
+        slot.err = true; toast(er.message || 'A picture could not be uploaded', true);
+        setTimeout(() => { const i = ePhotos.indexOf(slot); if (i > -1) { ePhotos.splice(i, 1); renderPics(); } }, 2500);
+      }
+      URL.revokeObjectURL(slot.preview); uploading--; renderPics();
+    }
+  });
+  function shrink(file, max = 1800) {
+    return new Promise((ok, bad) => {
+      const img = new Image(), url = URL.createObjectURL(file);
+      img.onload = () => {
+        const s = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+        const c = document.createElement('canvas'); c.width = Math.round(img.naturalWidth * s); c.height = Math.round(img.naturalHeight * s);
+        const ctx = c.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height); ctx.drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(url);
+        c.toBlob((b) => b ? ok(b) : bad(new Error('Could not read picture')), 'image/jpeg', 0.84);
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); bad(new Error(`"${file.name}" is not a picture this browser can read`)); };
+      img.src = url;
+    });
+  }
+  function upload(blob, onp) {
+    return new Promise((ok, bad) => {
+      const x = new XMLHttpRequest();
+      x.open('POST', '/api/upload'); x.setRequestHeader('content-type', 'image/jpeg'); x.withCredentials = true;
+      x.upload.onprogress = (e) => { if (e.lengthComputable) onp(e.loaded / e.total * 100); };
+      x.onload = () => { let d = {}; try { d = JSON.parse(x.responseText); } catch {} if (x.status === 401) { showLogin(); return bad(new Error('Please log in again.')); } x.status < 300 && d.key ? ok(d.key) : bad(new Error(d.error || 'Upload failed')); };
+      x.onerror = () => bad(new Error('Upload failed. Check the internet connection.'));
+      x.send(blob);
+    });
+  }
+  $('#eForm').addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    if (uploading) return showErr($('#eErr'), 'Please wait, pictures are still uploading.');
+    const data = {}; current.fields.forEach((x) => { data[x.id] = ev.target.elements['f_' + x.id].value.trim(); });
+    if (!Object.values(data).some(Boolean)) return showErr($('#eErr'), 'Fill in at least the machine name.');
+    const photos = ePhotos.filter((k) => typeof k === 'string');
+    const btn = $('#eSave'); btn.disabled = true; showErr($('#eErr'), '');
+    try {
+      const body = JSON.stringify({ folder_id: current.id, data, photos });
+      if (eEditing) await api('entries/' + eEditing.id, { method: 'PUT', body }); else await api('entries', { method: 'POST', body });
+      saved = true;
+      const unused = eNew.filter((k) => !photos.includes(k)); if (unused.length) api('discard', { method: 'POST', body: JSON.stringify({ keys: unused }) }).catch(() => {});
+      dE.close(); toast(eEditing ? 'Machine saved' : 'Machine added'); viewFolder(current.id);
+    } catch (er) { showErr($('#eErr'), er.message); }
+    btn.disabled = false;
+  });
+  dE.addEventListener('close', () => {
+    if (!saved && eNew.length) api('discard', { method: 'POST', body: JSON.stringify({ keys: eNew }) }).catch(() => {});
+    eNew = [];
+  });
+  document.querySelectorAll('[data-close]').forEach((b) => b.onclick = () => b.closest('dialog').close());
+  [dF, dE].forEach((d) => d.addEventListener('cancel', (e) => { if (d === dE && uploading) e.preventDefault(); }));
+
+  /* ---------- start ---------- */
+  api('me').then((d) => d.admin ? showApp() : showLogin()).catch(() => showLogin());
+})();
+</script>
+</body>
+</html>
