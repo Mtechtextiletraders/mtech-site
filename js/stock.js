@@ -25,7 +25,7 @@
     if (!r.ok) throw new Error(d.error || 'Could not load');
     return d;
   };
-  const titleOf = (f, e) => (f.fields[0] && e.data[f.fields[0].id]) || 'Machine';
+  const titleOf = (f, e) => (f.fields[0] && e.data[f.fields[0].id]) || 'Item';
   const detailsOf = (f, e, skipFirst = true) => f.fields.slice(skipFirst ? 1 : 0).filter((x) => e.data[x.id]).map((x) => ({ label: x.label, value: e.data[x.id], long: x.long }));
   const errBox = (el, msg) => { el.innerHTML = `<div class="stk-empty"><p>${esc(msg)}</p><a class="btn btn-ghost" href="/stock.html"><span>Back to stock</span></a></div>`; };
   const ICON_IMG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Zm0 10 4.5-4.5a1.5 1.5 0 0 1 2 0L16 17m-2-2 1.5-1.5a1.5 1.5 0 0 1 2 0L20 16M15 8.5h.01"/></svg>';
@@ -44,7 +44,7 @@
           <div class="stk-folder-b">
             <span class="stk-num">${String(i + 1).padStart(2, '0')}</span>
             <h2 class="h3">${esc(f.name)}</h2>
-            <p>${f.count} ${f.count === 1 ? 'machine' : 'machines'} in stock</p>
+            <p>${f.count} ${f.count === 1 ? 'item' : 'items'} in stock</p>
             <span class="stk-go">Open folder <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M13 6l6 6-6 6"/></svg></span>
           </div>
         </a>`).join('');
@@ -61,9 +61,9 @@
       $('#stkTitle').textContent = folder.name;
       $('#stkCrumb').textContent = folder.name;
       $('#stkLead').textContent = entries.length
-        ? `${entries.length} ${entries.length === 1 ? 'machine' : 'machines'} in stock. Open any machine to see all its pictures, or download the full list as a PDF.`
+        ? `${entries.length} ${entries.length === 1 ? 'item' : 'items'} in stock. Open any item to see all its pictures, or download the full list as a PDF.`
         : 'This folder is empty right now.';
-      if (!entries.length) { itemsEl.innerHTML = '<div class="stk-empty"><p>No machines listed in this folder at the moment.</p></div>'; return; }
+      if (!entries.length) { itemsEl.innerHTML = '<div class="stk-empty"><p>Nothing listed in this folder at the moment.</p></div>'; return; }
       itemsEl.innerHTML = entries.map((e) => {
         const d = detailsOf(folder, e);
         const short = d.filter((x) => !x.long), long = d.filter((x) => x.long);
@@ -105,11 +105,11 @@
       const d = detailsOf(folder, entry);
       $('#stkLead').textContent = entry.photos.length ? `${entry.photos.length} ${entry.photos.length === 1 ? 'picture' : 'pictures'}` : 'Pictures available on request.';
       $('#stkDl').innerHTML = d.map((x) => `<div class="${x.long ? 'long' : ''}"><dt>${esc(x.label)}</dt><dd>${esc(x.value)}</dd></div>`).join('') || '';
-      const lines = [`Assalam o Alaikum M Tech, I am interested in this machine from your ${folder.name} stock:`, '', t, ...d.filter((x) => !x.long).map((x) => `${x.label}: ${x.value}`), '', location.href];
+      const lines = [`Assalam o Alaikum M Tech, I am interested in this item from your ${folder.name} stock:`, '', t, ...d.filter((x) => !x.long).map((x) => `${x.label}: ${x.value}`), '', location.href];
       $('#stkAsk').href = `https://wa.me/${WA}?text=${encodeURIComponent(lines.join('\n'))}`;
 
       const ph = entry.photos;
-      if (!ph.length) { galEl.innerHTML = `<div class="stk-noimg">${ICON_IMG}<p>Pictures of this machine are available on request.</p></div>`; return; }
+      if (!ph.length) { galEl.innerHTML = `<div class="stk-noimg">${ICON_IMG}<p>Pictures are available on request.</p></div>`; return; }
       galEl.innerHTML = `<button class="stk-main" type="button" aria-label="Open picture full screen"><img src="${img(ph[0])}" alt="${esc(t)}"></button>
         ${ph.length > 1 ? `<div class="stk-thumbs">${ph.map((k, i) => `<button type="button" data-i="${i}" ${i === 0 ? 'aria-current="true"' : ''} aria-label="Picture ${i + 1}"><img src="${img(k)}" alt="" loading="lazy"></button>`).join('')}</div>` : ''}`;
       let cur = 0;
@@ -142,7 +142,7 @@
       lb.addEventListener('touchend', (e) => { if (sx == null) return; const dx = e.changedTouches[0].clientX - sx; if (Math.abs(dx) > 40) step(dx < 0 ? 1 : -1); sx = null; });
     }).catch(() => {
       $('#stkTitle').textContent = 'Not found';
-      errBox(galEl, 'This machine is no longer listed.');
+      errBox(galEl, 'This item is no longer listed.');
     });
   }
 
@@ -188,7 +188,7 @@
         doc.text(folder.name, M + lw + 6, first ? 23.5 : 22);
         doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(...MUTE);
         doc.text(`Updated ${today}`, W - M, 15, { align: 'right' });
-        doc.text(`${entries.length} ${entries.length === 1 ? 'machine' : 'machines'}`, W - M, 20, { align: 'right' });
+        doc.text(`${entries.length} ${entries.length === 1 ? 'item' : 'items'}`, W - M, 20, { align: 'right' });
         const vt = 'View on website  >';
         doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(...BLUE);
         const vw = doc.getTextWidth(vt);
@@ -254,7 +254,7 @@
 
       const n = doc.internal.getNumberOfPages();
       for (let i = 1; i <= n; i++) { doc.setPage(i); footer(i, n); }
-      doc.setProperties({ title: `M Tech Stock List - ${folder.name}`, author: MTECH.name, subject: `${folder.name} machinery stock`, creator: 'mtechtextiletraders.com' });
+      doc.setProperties({ title: `M Tech Stock List - ${folder.name}`, author: MTECH.name, subject: `${folder.name} stock`, creator: 'mtechtextiletraders.com' });
       doc.save(`M-Tech-Stock-List-${folder.name.replace(/[^\w]+/g, '-').replace(/^-|-$/g, '')}.pdf`);
     } catch (e) {
       alert('The PDF could not be made right now. Please try again.');

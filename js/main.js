@@ -285,10 +285,12 @@
   const pt = document.createElement('div'); pt.className = 'pt'; pt.setAttribute('aria-hidden', 'true');
   pt.innerHTML = '<div class="pt-in"><img src="' + document.querySelector('.brand img').getAttribute('src') + '" alt=""></div>';
   document.body.appendChild(pt);
+  gsap.set(pt, { y: 0, yPercent: 100 }); // reset the CSS translateY(100%) so GSAP does not read it as a fixed pixel offset
   if (html.classList.contains('pt-in')) {
     try { sessionStorage.removeItem('pt'); } catch (e) {}
     gsap.set(pt, { yPercent: 0 }); html.classList.remove('pt-in');
     gsap.to(pt, { yPercent: -100, duration: .9, ease: 'expo.inOut', delay: .05 });
+    setTimeout(() => gsap.set(pt, { yPercent: -100 }), 2000); // never leave the logo screen on top
   } else gsap.set(pt, { yPercent: 100 });
   document.addEventListener('click', (e) => {
     const a = e.target.closest('a'); if (!a || e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;
@@ -298,8 +300,9 @@
     e.preventDefault();
     try { sessionStorage.setItem('pt', '1'); } catch (er) {}
     gsap.fromTo(pt, { yPercent: 100 }, { yPercent: 0, duration: .7, ease: 'expo.inOut', onComplete: () => { location.href = u.href; } });
+    setTimeout(() => { location.href = u.href; }, 1200);
   });
-  addEventListener('pageshow', (e) => { if (e.persisted) gsap.set(pt, { yPercent: 100 }); });
+  addEventListener('pageshow', (e) => { if (e.persisted) { try { sessionStorage.removeItem('pt'); } catch (er) {} html.classList.remove('pt-in'); gsap.set(pt, { yPercent: 100 }); } });
 
   /* ---------- 3D tilt on cards ---------- */
   if (matchMedia('(hover:hover) and (pointer:fine)').matches) {
