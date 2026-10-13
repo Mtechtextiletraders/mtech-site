@@ -104,7 +104,7 @@ def head(title, desc, rel, path, extra=""):
 <link rel="preload" href="{rel}assets/fonts/archivo-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="{rel}assets/fonts/hanken-grotesk-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="{rel}{V('css/style.css')}">
-<script>try{{if(sessionStorage.getItem("pt"))document.documentElement.classList.add("pt-in")}}catch(e){{}}</script>
+<script>try{{if(sessionStorage.getItem("pt")){{document.documentElement.classList.add("pt-in");setTimeout(function(){{document.documentElement.classList.remove("pt-in")}},2500)}}}}catch(e){{}}</script>
 {extra}</head>
 '''
 
@@ -151,7 +151,7 @@ def footer(rel):
     <div><h4>Services</h4><ul>{svc}</ul></div>
     <div><h4>Company</h4><ul>
       <li><a href="{rel}about.html">About M Tech</a></li>
-      <li><a href="{rel}stock.html">Machinery stock</a></li>
+      <li><a href="{rel}stock.html">Stock</a></li>
       <li><a href="{rel}team.html">Our team</a></li>
       <li><a href="{CEO_SITE}" target="_blank" rel="noopener">Abdul Rasheed Gill</a></li>
       <li><a href="{rel}contact.html">Contact</a></li></ul></div>
@@ -646,9 +646,9 @@ def stock_head(crumbs_html, eyebrow, title_html, lead_html, actions=""):
 STOCK_SCRIPTS = '<script src="{rel}' + V('js/stock.js') + '" defer></script>'
 PDF_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19h14"/></svg>'
 
-stock_index = stock_head('<a href="{rel}index.html">Home</a> <span>/</span> <span aria-current="page">Machinery stock</span>',
-    "Machinery stock", 'Machinery <span class="acc">in stock</span>',
-    "What we have right now, department by department. Open a folder for pictures and details of every machine, or download its stock list as a PDF.") + f'''
+stock_index = stock_head('<a href="{rel}index.html">Home</a> <span>/</span> <span aria-current="page">Stock</span>',
+    "Stock", 'What we have <span class="acc">in stock</span>',
+    "What we have right now, department by department. Open a folder for pictures and details of every item, or download its stock list as a PDF.") + f'''
 <section class="sec stk-sec">
   <div class="wrap">
     <div class="stk-folders" id="stkFolders" aria-live="polite">
@@ -656,10 +656,10 @@ stock_index = stock_head('<a href="{rel}index.html">Home</a> <span>/</span> <spa
     </div>
   </div>
 </section>
-''' + cta_band("Need a machine that is not listed?", "Stock changes every week. Tell us what you are looking for and we will check the godown and our network.")
+''' + cta_band("Need something that is not listed?", "Stock changes every week. Tell us what you are looking for and we will check the godown and our network.")
 
-stock_folder = stock_head('<a href="/index.html">Home</a> <span>/</span> <a href="/stock.html">Machinery stock</a> <span>/</span> <span aria-current="page" id="stkCrumb">Folder</span>',
-    "Machinery stock", '<span id="stkTitle">Loading</span>', '<span id="stkLead">Pictures and details of every machine in this folder.</span>',
+stock_folder = stock_head('<a href="/index.html">Home</a> <span>/</span> <a href="/stock.html">Stock</a> <span>/</span> <span aria-current="page" id="stkCrumb">Folder</span>',
+    "Stock", '<span id="stkTitle">Loading</span>', '<span id="stkLead">Pictures and details of every item in this folder.</span>',
     f'<div class="stk-actions"><button class="btn btn-pri btn-lg" id="stkPdf" type="button" disabled>{PDF_ICON}<span>Download PDF</span></button><a class="btn btn-ghost btn-lg" href="/stock.html"><span>All folders</span></a></div>') + '''
 <section class="sec stk-sec">
   <div class="wrap">
@@ -668,17 +668,17 @@ stock_folder = stock_head('<a href="/index.html">Home</a> <span>/</span> <a href
     </div>
   </div>
 </section>
-''' + cta_band("Interested in a machine from this list?", "Call or WhatsApp us with the machine name. Godown visits are by appointment.")
+''' + cta_band("Interested in something from this list?", "Call or WhatsApp us with the item name. Godown visits are by appointment.")
 
-stock_item = stock_head('<a href="/index.html">Home</a> <span>/</span> <a href="/stock.html">Machinery stock</a> <span>/</span> <a href="/stock.html" id="stkFolderLink">Folder</a> <span>/</span> <span aria-current="page" id="stkCrumb">Machine</span>',
-    '<span id="stkEyebrow">Machinery stock</span>', '<span id="stkTitle">Loading</span>', '<span id="stkLead"></span>') + f'''
+stock_item = stock_head('<a href="/index.html">Home</a> <span>/</span> <a href="/stock.html">Stock</a> <span>/</span> <a href="/stock.html" id="stkFolderLink">Folder</a> <span>/</span> <span aria-current="page" id="stkCrumb">Item</span>',
+    '<span id="stkEyebrow">Stock</span>', '<span id="stkTitle">Loading</span>', '<span id="stkLead"></span>') + f'''
 <section class="sec stk-sec">
   <div class="wrap stk-detail" id="stkDetail">
     <div class="stk-gallery" id="stkGallery"><div class="stk-skel tall"></div></div>
     <aside class="stk-info">
       <dl class="stk-dl" id="stkDl"></dl>
       <div class="stk-info-btns">
-        <a class="btn btn-wa btn-lg" id="stkAsk" href="{wa_link()}" target="_blank" rel="noopener">{ICON["wa"]}<span>Ask about this machine</span></a>
+        <a class="btn btn-wa btn-lg" id="stkAsk" href="{wa_link()}" target="_blank" rel="noopener">{ICON["wa"]}<span>Ask about this item</span></a>
         <a class="btn btn-ghost btn-lg" id="stkBack" href="/stock.html"><span>Back to folder</span></a>
       </div>
     </aside>
@@ -735,9 +735,9 @@ def build():
     page("team.html", "Team | M Tech Textile Traders", "Meet Abdul Rasheed Gill and his four sons, the family behind M Tech Textile Traders.", team)
     for t in TEAM:
         member_page(t)
-    page("stock.html", "Machinery Stock | M Tech Textile Traders", "Textile machinery in stock with M Tech Textile Traders, by department: pictures, details and downloadable stock lists.", stock_index, scripts=STOCK_SCRIPTS)
-    page("stock-folder.html", "Machinery Stock | M Tech Textile Traders", "Machinery stock with pictures and details.", stock_folder, active="stock.html", rel="/", scripts=STOCK_SCRIPTS, sitemap=False, bodycls="stk-page")
-    page("stock-item.html", "Machinery Stock | M Tech Textile Traders", "Machinery stock with pictures and details.", stock_item, active="stock.html", rel="/", scripts=STOCK_SCRIPTS, sitemap=False, bodycls="stk-page")
+    page("stock.html", "Stock | M Tech Textile Traders", "Textile machinery in stock with M Tech Textile Traders, by department: pictures, details and downloadable stock lists.", stock_index, scripts=STOCK_SCRIPTS)
+    page("stock-folder.html", "Stock | M Tech Textile Traders", "Stock with pictures and details.", stock_folder, active="stock.html", rel="/", scripts=STOCK_SCRIPTS, sitemap=False, bodycls="stk-page")
+    page("stock-item.html", "Stock | M Tech Textile Traders", "Stock with pictures and details.", stock_item, active="stock.html", rel="/", scripts=STOCK_SCRIPTS, sitemap=False, bodycls="stk-page")
     page("contact.html", "Contact | M Tech Textile Traders", f"Call or WhatsApp M Tech Textile Traders on {OFFICIAL}. Office in Manga Mandi, Lahore; warehouse in Faisalabad.", contact)
 
     # 404 with absolute paths

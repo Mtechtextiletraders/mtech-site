@@ -427,8 +427,8 @@ async function stockPage(req, env, url, parts) {
     const nf = await env.ASSETS.fetch(new Request(new URL('/404', url), req));
     return new Response(nf.body, { status: 404, headers: nf.headers });
   }
-  let title = `${f.name} | Machinery Stock | M Tech Textile Traders`;
-  let desc = `${f.name} machinery available with M Tech Textile Traders: pictures and details of every machine in stock.`;
+  let title = `${f.name} | Stock | M Tech Textile Traders`;
+  let desc = `${f.name} in stock with M Tech Textile Traders: pictures and details of every item.`;
   if (parts.length > 1) {
     const e = parseEntry(await env.DB.prepare('SELECT * FROM entries WHERE id = ? AND folder_id = ?').bind(parts[1], f.id).first());
     if (!e) {
