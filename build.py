@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Builds the M Tech Textile Traders static site (shared header/footer)."""
 import json, os, re, html
+from urllib.parse import quote
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 SITE = "https://mtechtextiletraders.com"
@@ -159,12 +160,13 @@ def footer(rel):
     <span class="credit">Designed by <a href="https://navifexpro.com" target="_blank" rel="noopener">navifexpro.com</a></span>
   </div>
 </footer>
-<a class="fab" href="{wa_link('Assalam o Alaikum M Tech, I want to ask about ')}" target="_blank" rel="noopener" aria-label="Chat on WhatsApp">{ICON["wa"]}</a>
+<a class="fab" href="https://wa.me/923004681423?text={quote('Assalam o Alaikum Rasheed Sb, main M Tech ki website se raabta kar raha hoon. ')}" target="_blank" rel="noopener" aria-label="WhatsApp Rasheed Sb">{ICON["wa"]}<span class="fab-tip">Rasheed Sb ko WhatsApp</span></a>
 <nav class="mbar" aria-label="Quick contact"><a class="mbar-call" href="tel:{tel(OFFICIAL)}">{ICON["ph"]}<span>Call</span></a><a class="mbar-wa" href="{wa_link('Assalam o Alaikum M Tech, I want to ask about ')}" target="_blank" rel="noopener">{ICON["wa"]}<span>WhatsApp</span></a></nav>
 <script src="{rel}js/vendor/gsap.min.js" defer></script>
 <script src="{rel}js/vendor/ScrollTrigger.min.js" defer></script>
 <script src="{rel}js/vendor/lenis.min.js" defer></script>
 <script src="{rel}js/main.js" defer></script>
+<script src="{rel}js/chat.js" defer></script>
 </body>
 </html>
 '''
