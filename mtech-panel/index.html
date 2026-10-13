@@ -151,7 +151,7 @@ dialog::backdrop{background:rgba(4,10,34,.55)}
   <div class="login-card">
     <img src="/assets/img/logo.png" alt="M Tech" width="84" height="44">
     <h1>Stock Panel</h1>
-    <p class="sub">Log in to manage M Tech machinery stock.</p>
+    <p class="sub">Log in to manage M Tech stock.</p>
     <form id="loginForm">
       <label>Username<input type="text" name="username" autocomplete="username" autocapitalize="none" required></label>
       <label>Password<input type="password" name="password" autocomplete="current-password" required></label>
@@ -177,13 +177,13 @@ dialog::backdrop{background:rgba(4,10,34,.55)}
   <div class="dlg-b">
     <label>Folder name<input type="text" name="fname" placeholder="e.g. Blowroom, Carding, Ring Frames" required maxlength="80"></label>
     <div>
-      <p class="sect-t">Which details should each machine in this folder have?</p>
-      <p class="hint">The first detail is used as the machine's name. Tick "Long" for a detail that needs more text, like a description.</p>
+      <p class="sect-t">Which details should each item in this folder have?</p>
+      <p class="hint">The first detail is used as the item's name. Tick "Long" for a detail that needs more text, like a description.</p>
       <div class="flist" id="fList"></div>
       <div class="chips" id="fChips"></div>
       <button class="btn btn-ghost btn-sm" type="button" id="fAdd" style="margin-top:10px">+ Add a detail</button>
     </div>
-    <p class="note" id="fEditNote" hidden>Renaming a detail keeps the data already entered. Removing a detail hides it from every machine in this folder.</p>
+    <p class="note" id="fEditNote" hidden>Renaming a detail keeps the data already entered. Removing a detail hides it from every item in this folder.</p>
   </div>
   <div class="dlg-f">
     <p class="msg-err" id="fErr" hidden></p>
@@ -194,7 +194,7 @@ dialog::backdrop{background:rgba(4,10,34,.55)}
 
 <!-- ENTRY DIALOG -->
 <dialog id="dEntry"><form class="dlg" method="dialog" id="eForm">
-  <div class="dlg-h"><h2 id="eTitle">Add machine</h2><button class="icon-btn" type="button" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+  <div class="dlg-h"><h2 id="eTitle">Add item</h2><button class="icon-btn" type="button" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M6 6l12 12M18 6 6 18"/></svg></button></div>
   <div class="dlg-b">
     <div id="eFields" style="display:flex;flex-direction:column;gap:16px"></div>
     <div>
@@ -207,7 +207,7 @@ dialog::backdrop{background:rgba(4,10,34,.55)}
   <div class="dlg-f">
     <p class="msg-err" id="eErr" hidden></p>
     <button class="btn btn-ghost" type="button" data-close>Cancel</button>
-    <button class="btn btn-pri" type="submit" id="eSave">Save machine</button>
+    <button class="btn btn-pri" type="submit" id="eSave">Save item</button>
   </div>
 </form></dialog>
 
@@ -274,14 +274,14 @@ dialog::backdrop{background:rgba(4,10,34,.55)}
     current = null;
     main.innerHTML = '<p class="loading">Loading…</p>';
     try { folders = await api('folders'); } catch (e) { main.innerHTML = `<div class="empty">${esc(e.message)}</div>`; return; }
-    main.innerHTML = `<div class="bar"><div><h1>Machinery stock</h1><p>${folders.length} ${folders.length === 1 ? 'folder' : 'folders'}. Each folder gets its own page and PDF on the website.</p></div>
+    main.innerHTML = `<div class="bar"><div><h1>Stock</h1><p>${folders.length} ${folders.length === 1 ? 'folder' : 'folders'}. Each folder gets its own page and PDF on the website.</p></div>
       <div class="bar-btns"><button class="btn btn-pri" id="newFolder">${I.plus}New folder</button></div></div>
       ${folders.length ? `<div class="fgrid">${folders.map((f, i) => `
         <article class="fcard">
           <button class="fcard-img" data-open="${f.id}" aria-label="Open ${esc(f.name)}">${f.cover ? `<img src="/img/${f.cover}" alt="">` : I.img}</button>
           <div class="fcard-b">
             <h2>${esc(f.name)}</h2>
-            <p>${f.count} ${f.count === 1 ? 'machine' : 'machines'} · ${f.fields.length} details</p>
+            <p>${f.count} ${f.count === 1 ? 'item' : 'items'} · ${f.fields.length} details</p>
             <div class="fcard-acts">
               <button class="btn btn-pri btn-sm" data-open="${f.id}">Open</button>
               <button class="icon-btn" data-up="${i}" ${i === 0 ? 'disabled' : ''} aria-label="Move up">${I.left}</button>
@@ -305,7 +305,7 @@ dialog::backdrop{background:rgba(4,10,34,.55)}
     });
   }
   async function deleteFolder(f) {
-    if (!confirm(`Delete the folder "${f.name}"?\n\nAll ${f.count} machines and their pictures in it will be deleted too. This cannot be undone.`)) return;
+    if (!confirm(`Delete the folder "${f.name}"?\n\nAll ${f.count} items and their pictures in it will be deleted too. This cannot be undone.`)) return;
     try { await api('folders/' + f.id, { method: 'DELETE' }); toast('Folder deleted'); location.hash = ''; viewFolders(); } catch (e) { toast(e.message, true); }
   }
 
@@ -327,7 +327,7 @@ dialog::backdrop{background:rgba(4,10,34,.55)}
     const list = $('#fList');
     list.innerHTML = fFields.map((x, i) => `<div class="frow">
       <span class="num">${i + 1}</span>
-      <input type="text" value="${esc(x.label)}" data-i="${i}" placeholder="${i === 0 ? 'Machine name, e.g. Particulars' : 'Detail name'}" maxlength="60" aria-label="Detail ${i + 1}">
+      <input type="text" value="${esc(x.label)}" data-i="${i}" placeholder="${i === 0 ? 'Item name, e.g. Particulars' : 'Detail name'}" maxlength="60" aria-label="Detail ${i + 1}">
       <label class="long"><input type="checkbox" data-long="${i}" ${x.long ? 'checked' : ''}> Long</label>
       <span class="acts">
         <button class="icon-btn" type="button" data-fu="${i}" ${i === 0 ? 'disabled' : ''} aria-label="Move up">${I.up}</button>
@@ -358,7 +358,7 @@ dialog::backdrop{background:rgba(4,10,34,.55)}
     if (!fields.length) return showErr($('#fErr'), 'Add at least one detail.');
     if (fEditing) {
       const removed = fEditing.fields.filter((o) => !fields.some((n) => n.id === o.id));
-      if (removed.length && fEditing.count && !confirm(`You removed: ${removed.map((r) => r.label).join(', ')}.\nThis detail will be hidden from every machine in this folder. Continue?`)) return;
+      if (removed.length && fEditing.count && !confirm(`You removed: ${removed.map((r) => r.label).join(', ')}.\nThis detail will be hidden from every item in this folder. Continue?`)) return;
     }
     const btn = $('#fSave'); btn.disabled = true; showErr($('#fErr'), '');
     try {
@@ -380,11 +380,11 @@ dialog::backdrop{background:rgba(4,10,34,.55)}
     const t = (e) => (f.fields[0] && e.data[f.fields[0].id]) || '(no name)';
     const sub = (e) => f.fields.slice(1).filter((x) => !x.long && e.data[x.id]).map((x) => `${x.label}: ${e.data[x.id]}`).join(' · ');
     main.innerHTML = `<div class="crumb"><button type="button" id="back">← All folders</button></div>
-      <div class="bar"><div><h1>${esc(f.name)}</h1><p>${entries.length} ${entries.length === 1 ? 'machine' : 'machines'} · Details: ${f.fields.map((x) => esc(x.label)).join(', ')}</p></div>
+      <div class="bar"><div><h1>${esc(f.name)}</h1><p>${entries.length} ${entries.length === 1 ? 'item' : 'items'} · Details: ${f.fields.map((x) => esc(x.label)).join(', ')}</p></div>
       <div class="bar-btns">
         <a class="btn btn-ghost" href="/stock/${encodeURIComponent(f.slug)}" target="_blank" rel="noopener">${I.ext}Website page</a>
         <button class="btn btn-ghost" id="editF">${I.edit}Edit folder</button>
-        <button class="btn btn-pri" id="addE">${I.plus}Add machine</button>
+        <button class="btn btn-pri" id="addE">${I.plus}Add item</button>
       </div></div>
       ${entries.length ? `<div class="elist">${entries.map((e, i) => `
         <article class="erow">
@@ -397,7 +397,7 @@ dialog::backdrop{background:rgba(4,10,34,.55)}
             <button class="icon-btn del" data-del="${e.id}" aria-label="Delete">${I.del}</button>
           </div>
         </article>`).join('')}</div>`
-      : `<div class="empty"><p>No machines in this folder yet.</p><button class="btn btn-pri" id="addE2">${I.plus}Add first machine</button></div>`}`;
+      : `<div class="empty"><p>Nothing in this folder yet.</p><button class="btn btn-pri" id="addE2">${I.plus}Add first item</button></div>`}`;
     $('#back').onclick = () => { location.hash = ''; };
     $('#editF').onclick = () => openFolderDialog(f);
     $('#addE').onclick = () => openEntryDialog(null); if ($('#addE2')) $('#addE2').onclick = () => openEntryDialog(null);
@@ -405,7 +405,7 @@ dialog::backdrop{background:rgba(4,10,34,.55)}
     main.querySelectorAll('[data-del]').forEach((b) => b.onclick = async () => {
       const e = entries.find((x) => x.id === b.dataset.del);
       if (!confirm(`Delete "${t(e)}" and its ${e.photos.length} pictures? This cannot be undone.`)) return;
-      try { await api('entries/' + e.id, { method: 'DELETE' }); toast('Machine deleted'); viewFolder(f.id); } catch (er) { toast(er.message, true); }
+      try { await api('entries/' + e.id, { method: 'DELETE' }); toast('Item deleted'); viewFolder(f.id); } catch (er) { toast(er.message, true); }
     });
     main.querySelectorAll('[data-up],[data-down]').forEach((b) => b.onclick = async () => {
       const i = +(b.dataset.up ?? b.dataset.down), j = b.dataset.up != null ? i - 1 : i + 1;
@@ -421,8 +421,8 @@ dialog::backdrop{background:rgba(4,10,34,.55)}
   function openEntryDialog(e) {
     eEditing = e; saved = false; eNew = [];
     ePhotos = e ? e.photos.slice() : [];
-    $('#eTitle').textContent = e ? 'Edit machine' : `Add machine to ${current.name}`;
-    $('#eFields').innerHTML = current.fields.map((x, i) => `<label>${esc(x.label)}${i === 0 ? ' <span class="hint">(machine name)</span>' : ''}
+    $('#eTitle').textContent = e ? 'Edit item' : `Add item to ${current.name}`;
+    $('#eFields').innerHTML = current.fields.map((x, i) => `<label>${esc(x.label)}${i === 0 ? ' <span class="hint">(item name)</span>' : ''}
       ${x.long ? `<textarea name="f_${x.id}" maxlength="4000">${esc(e ? e.data[x.id] || '' : '')}</textarea>` : `<input type="text" name="f_${x.id}" maxlength="300" value="${esc(e ? e.data[x.id] || '' : '')}">`}</label>`).join('');
     showErr($('#eErr'), '');
     renderPics();
@@ -491,7 +491,7 @@ dialog::backdrop{background:rgba(4,10,34,.55)}
     ev.preventDefault();
     if (uploading) return showErr($('#eErr'), 'Please wait, pictures are still uploading.');
     const data = {}; current.fields.forEach((x) => { data[x.id] = ev.target.elements['f_' + x.id].value.trim(); });
-    if (!Object.values(data).some(Boolean)) return showErr($('#eErr'), 'Fill in at least the machine name.');
+    if (!Object.values(data).some(Boolean)) return showErr($('#eErr'), 'Fill in at least the item name.');
     const photos = ePhotos.filter((k) => typeof k === 'string');
     const btn = $('#eSave'); btn.disabled = true; showErr($('#eErr'), '');
     try {
@@ -499,7 +499,7 @@ dialog::backdrop{background:rgba(4,10,34,.55)}
       if (eEditing) await api('entries/' + eEditing.id, { method: 'PUT', body }); else await api('entries', { method: 'POST', body });
       saved = true;
       const unused = eNew.filter((k) => !photos.includes(k)); if (unused.length) api('discard', { method: 'POST', body: JSON.stringify({ keys: unused }) }).catch(() => {});
-      dE.close(); toast(eEditing ? 'Machine saved' : 'Machine added'); viewFolder(current.id);
+      dE.close(); toast(eEditing ? 'Item saved' : 'Item added'); viewFolder(current.id);
     } catch (er) { showErr($('#eErr'), er.message); }
     btn.disabled = false;
   });
