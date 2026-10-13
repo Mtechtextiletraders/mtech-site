@@ -66,7 +66,7 @@
   /* ---------- 3D machine: load three.js only on the page that needs it ---------- */
   const mc = document.getElementById('machine');
   if (mc) {
-    const base = document.querySelector('script[src$="js/main.js"]').src.replace(/main\.js.*$/, '');
+    const base = document.querySelector('script[src*="js/main.js"]').src.replace(/main\.js.*$/, '');
     const load = (src) => new Promise((ok, no) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = no; document.body.appendChild(s); });
     const go = () => load(base + 'vendor/three.min.js').then(() => load(base + 'machine3d.js')).catch(() => mc.classList.add('ready'));
     new IntersectionObserver((en, ob) => { if (en[0].isIntersecting) { ob.disconnect(); go(); } }, { rootMargin: '1500px 0px' }).observe(mc);
