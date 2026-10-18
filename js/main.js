@@ -273,17 +273,17 @@
       gsap.to(st.querySelector('.steps-rail i'), { scaleY: 1, ease: 'none', scrollTrigger: { trigger: st, start: 'top 75%', end: 'bottom 60%', scrub: true } });
     });
     // footer accordion
-    document.querySelectorAll('.ftr-top > div:not(.ftr-brand) h4').forEach((h) => {
+    document.querySelectorAll('.ftr-top > div:not(.ftr-brand) .ftr-h').forEach((h) => {
       h.setAttribute('role', 'button'); h.setAttribute('tabindex', '0'); h.setAttribute('aria-expanded', 'false');
       const t = () => { const o = h.parentElement.classList.toggle('open'); h.setAttribute('aria-expanded', o); setTimeout(() => ScrollTrigger.refresh(), 450); };
       h.addEventListener('click', t); h.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); t(); } });
     });
-    const reach = [...document.querySelectorAll('.ftr-top > div:not(.ftr-brand)')].pop(); if (reach) { reach.classList.add('open'); reach.querySelector('h4').setAttribute('aria-expanded', 'true'); }
+    const reach = [...document.querySelectorAll('.ftr-top > div:not(.ftr-brand)')].pop(); if (reach) { reach.classList.add('open'); reach.querySelector('.ftr-h').setAttribute('aria-expanded', 'true'); }
   }
 
   /* ---------- page transitions ---------- */
   const pt = document.createElement('div'); pt.className = 'pt'; pt.setAttribute('aria-hidden', 'true');
-  pt.innerHTML = '<div class="pt-in"><img src="' + document.querySelector('.brand img').getAttribute('src') + '" alt=""></div>';
+  pt.innerHTML = '<div class="pt-in"><img src="' + document.querySelector('.brand img').getAttribute('src') + '" alt="" width="62" height="32"></div>';
   document.body.appendChild(pt);
   gsap.set(pt, { y: 0, yPercent: 100 }); // reset the CSS translateY(100%) so GSAP does not read it as a fixed pixel offset
   if (html.classList.contains('pt-in')) {
@@ -296,7 +296,7 @@
     const a = e.target.closest('a'); if (!a || e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;
     if (a.target === '_blank' || a.hasAttribute('download')) return;
     const u = new URL(a.href, location.href);
-    if (u.origin !== location.origin || (u.pathname === location.pathname && u.hash) || !/(\.html|\/)$/.test(u.pathname)) return;
+    if (u.origin !== location.origin || (u.pathname === location.pathname && u.hash) || !/(\.html|\/|\/[\w-]+)$/.test(u.pathname)) return;
     e.preventDefault();
     try { sessionStorage.setItem('pt', '1'); } catch (er) {}
     gsap.fromTo(pt, { yPercent: 100 }, { yPercent: 0, duration: .7, ease: 'expo.inOut', onComplete: () => { location.href = u.href; } });

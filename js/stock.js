@@ -27,7 +27,7 @@
   };
   const titleOf = (f, e) => (f.fields[0] && e.data[f.fields[0].id]) || 'Item';
   const detailsOf = (f, e, skipFirst = true) => f.fields.slice(skipFirst ? 1 : 0).filter((x) => e.data[x.id]).map((x) => ({ label: x.label, value: e.data[x.id], long: x.long }));
-  const errBox = (el, msg) => { el.innerHTML = `<div class="stk-empty"><p>${esc(msg)}</p><a class="btn btn-ghost" href="/stock.html"><span>Back to stock</span></a></div>`; };
+  const errBox = (el, msg) => { el.innerHTML = `<div class="stk-empty"><p>${esc(msg)}</p><a class="btn btn-ghost" href="/stock"><span>Back to stock</span></a></div>`; };
   const ICON_IMG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Zm0 10 4.5-4.5a1.5 1.5 0 0 1 2 0L16 17m-2-2 1.5-1.5a1.5 1.5 0 0 1 2 0L20 16M15 8.5h.01"/></svg>';
 
   /* ---------------------------------------------------------------- folders index */
