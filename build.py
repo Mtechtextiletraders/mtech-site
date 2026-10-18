@@ -99,7 +99,7 @@ def clean_links(doc, rel):
     return HREF_RE.sub(fix, doc)
 
 def head(title, desc, rel, path, extra="", ld=None, noindex=False):
-    canon = SITE + "/" + clean(path)
+    canon = SITE + "/" + (clean(path) if path not in ("stock-folder.html", "stock-item.html") else "stock")
     if len(title) > 60 or len(title) < 50 or len(desc) < 140 or len(desc) > 160:
         if not noindex and path not in ("stock-folder.html", "stock-item.html"):
             print(f"  SEO length warning {path}: title {len(title)}, description {len(desc)}")
@@ -535,8 +535,24 @@ def faq_html(faqs):
 def plain(x):
     return html.unescape(re.sub(r"<[^>]+>", "", x)).strip()
 
+# Short Urdu summary per service (restates facts already on the page) for Urdu searches.
+SVC_UR = {
+    "machinery": "نئی اور استعمال شدہ ٹیکسٹائل اور اسپننگ مشینری کی خرید و فروخت: بلو روم، کارڈنگ، ڈرا فریم، رنگ فریم، آٹوکونر اور اوپن اینڈ۔ دفتر لاہور، گودام فیصل آباد۔",
+    "spare-parts": "اسپننگ مل کے ہر شعبے کے نئے اور استعمال شدہ اسپیئر پارٹس: رنگ فریم، کارڈنگ، کومبنگ، سمپلیکس اور آٹوکونر۔ پورے پاکستان میں ڈیلیوری۔",
+    "yarn-cotton": "ہر قسم کا یارن اور مقامی و درآمدی کپاس: کارڈڈ، کومبڈ، کمپیکٹ اور اوپن اینڈ یارن، پی سی اور سی وی سی بلینڈ اور وسکوس۔",
+    "mill-sale-purchase": "مکمل اسپننگ ملز اور یونٹس کی خرید و فروخت، بروکریج، مشینری کی قیمت کا اندازہ اور نئی مل لگانے کا مشورہ۔ پہلی مشاورت مفت۔",
+}
+SVC_ALT = {
+    "machinery": ["Used spinning machinery", "Used textile machinery for sale in Pakistan", "Spinning machinery Lahore and Faisalabad"],
+    "spare-parts": ["Spinning spare parts Lahore", "Ring frame spare parts", "Autoconer spare parts", "Carding spare parts"],
+    "yarn-cotton": ["Cotton yarn traders", "Yarn traders Pakistan", "Cotton trade Pakistan"],
+    "mill-sale-purchase": ["Spinning mill for sale in Pakistan", "Mill sale purchase Pakistan", "Textile mill brokerage"],
+}
+
 def svc_page(slug, eyebrow, title, lead, img, intro, groups, extra_html=""):
     i = [s for s, *_ in SERVICES].index(slug)
+    if slug in SVC_UR:
+        intro += f'<p class="ur" lang="ur" dir="rtl">{SVC_UR[slug]}</p>'
     others = [x for x in SERVICES if x[0] != slug]
     g = "".join(f'''<div class="grp"><h2 class="grp-t">{gt}</h2><ul class="chips">{"".join(f"<li>{x}</li>" for x in items)}</ul></div>''' for gt, items in groups)
     nxt = SERVICES[(i + 1) % 4]
@@ -566,7 +582,13 @@ def svc_page(slug, eyebrow, title, lead, img, intro, groups, extra_html=""):
     t, d = SEO[path]
     ld = graph(webpage(path, "WebPage", t, d),
                {"@type": "Service", "@id": url_of(path) + "#service", "name": SERVICES[i][1], "serviceType": SERVICES[i][1],
-                "description": d, "url": url_of(path), "provider": BIZ_REF, "areaServed": {"@type": "Country", "name": "Pakistan"},
+                "alternateName": SVC_ALT.get(slug, []),
+                "description": d, "url": url_of(path), "provider": BIZ_REF,
+                "areaServed": [{"@type": "Country", "name": "Pakistan"}, {"@type": "City", "name": "Lahore"}, {"@type": "City", "name": "Faisalabad"}],
+                "availableLanguage": ["en", "ur"],
+                "hasOfferCatalog": {"@type": "OfferCatalog", "name": SERVICES[i][1], "itemListElement": [
+                    {"@type": "OfferCatalog", "name": plain(gt), "itemListElement": [
+                        {"@type": "Offer", "itemOffered": {"@type": "Service", "name": plain(x)}} for x in items]} for gt, items in groups]},
                 "image": f"{SITE}/assets/img/{img}"},
                crumbs_ld([("Home", "index.html"), ("Services", "services.html"), (SERVICES[i][1], path)]))
     if faqs:
@@ -779,7 +801,7 @@ def addr(street, city):
     return a
 
 BUSINESS = {
-    "@type": "LocalBusiness", "@id": BIZ_ID, "name": "M Tech Textile Traders", "url": SITE + "/",
+    "@type": "LocalBusiness", "@id": BIZ_ID, "name": "M Tech Textile Traders", "alternateName": "M Tech", "url": SITE + "/",
     "description": "Buying and selling new and pre-owned textile machinery, spinning spare parts, yarn and cotton, and complete spinning mills in Pakistan since 1988.",
     "logo": SITE + "/assets/img/icon-512.png", "image": SITE + "/assets/img/og.jpg",
     "telephone": tel(OFFICIAL), "email": EMAIL, "foundingDate": "1988",
@@ -787,10 +809,14 @@ BUSINESS = {
     "address": addr("Main Bazar Rasheed Town, Near Post Office, Manga Mandi", "Lahore"),
     "department": [{"@type": "LocalBusiness", "name": "M Tech Textile Traders, Faisalabad warehouse",
                     "address": addr("Darul Ehsan Town", "Faisalabad"), "telephone": tel(OFFICIAL)}],
-    "areaServed": {"@type": "Country", "name": "Pakistan"},
+    "areaServed": [{"@type": "Country", "name": "Pakistan"}] + [{"@type": "City", "name": c} for c in
+                   ("Lahore", "Faisalabad", "Karachi", "Hyderabad", "Nooriabad", "Multan", "Sheikhupura", "Mirpur")],
+    "employee": [{"@id": SITE + "/team/" + t["slug"] + "#person"} for t in TEAM],
     "contactPoint": {"@type": "ContactPoint", "telephone": tel(OFFICIAL), "contactType": "sales",
                      "areaServed": "PK", "availableLanguage": ["en", "ur"]},
-    "knowsAbout": ["Textile spinning machinery", "Spinning spare parts", "Yarn and cotton trade", "Spinning mill sale and purchase"],
+    "knowsAbout": ["Textile machinery", "Textile spinning machinery", "Used spinning machinery", "Spinning spare parts", "Ring frame spare parts",
+                   "Autoconer spare parts", "Open-end spinning machinery", "Autocoro", "Cotton yarn trade", "Cotton trade", "Spinning mill sale and purchase",
+                   "Machinery valuation", "New spinning mill setup"],
     "sameAs": [FB, IG, LI],
 }
 BIZ_REF = {"@id": BIZ_ID, "@type": "LocalBusiness", "name": "M Tech Textile Traders"}
@@ -814,24 +840,24 @@ def webpage(path, kind, name, desc, extra=None):
     return d
 
 SEO = {
-    "index.html": ("Textile Machinery in Lahore | M Tech Textile Traders",
-                   "M Tech Textile Traders, Lahore: new and pre-owned textile spinning machinery, spare parts, yarn, cotton and complete mills across Pakistan since 1988."),
+    "index.html": ("Textile Machinery Pakistan | M Tech Textile Traders, Lahore",
+                   "Textile machinery in Pakistan since 1988: new and used spinning machinery, spare parts, yarn, cotton, and complete mill sale and purchase. Lahore, Faisalabad."),
     "about.html": ("About Us | M Tech Textile Traders, Lahore, Since 1988",
                    "M Tech Textile Traders is a family textile machinery business serving Pakistan's spinning mills since 1988, from Manga Mandi, Lahore and Faisalabad."),
     "services.html": ("Textile Machinery Services Pakistan | M Tech Textile Traders",
                       "Textile machinery, spinning spare parts, yarn and cotton trade, and mill sale and purchase in Pakistan, from M Tech Textile Traders, Lahore and Faisalabad."),
     "services/machinery.html": ("Used Spinning Machinery Pakistan | M Tech Textile Traders",
-                                "Buy or sell new and pre-owned spinning machinery in Pakistan: blowroom, carding, draw frames, combers, simplex, ring frames, autoconers. Lahore, Faisalabad."),
+                                "Used and new spinning machinery for sale in Pakistan: blowroom, carding, draw frames, ring frames, Autoconers, open-end. Lahore office, Faisalabad godown."),
     "services/spare-parts.html": ("Spinning Spare Parts in Lahore | M Tech Textile Traders",
-                                  "Spinning spare parts for every department of a mill: ring frame, carding, combing, simplex and winding parts. M Tech Textile Traders, Lahore, since 1988."),
-    "services/yarn-cotton.html": ("Yarn & Cotton Trade in Pakistan | M Tech Textile Traders",
-                                  "Yarn and cotton trade in Pakistan: carded, combed, compact and open-end yarn, blends, and local and imported cotton. M Tech Textile Traders, Lahore."),
-    "services/mill-sale-purchase.html": ("Spinning Mill Sale & Purchase | M Tech Textile Traders",
-                                         "Buy or sell a complete spinning mill in Pakistan with M Tech Textile Traders: mill deals, brokerage, machinery valuation and new mill setup advice."),
+                                  "Spinning spare parts in Lahore for every mill department: ring frame, carding, combing, simplex and Autoconer parts, new and used. Delivered across Pakistan."),
+    "services/yarn-cotton.html": ("Cotton Yarn Traders in Pakistan | M Tech Textile Traders",
+                                  "Cotton yarn traders in Pakistan: carded, combed, compact and open-end yarn, PC and CVC blends, viscose, and local and imported cotton. M Tech, Lahore."),
+    "services/mill-sale-purchase.html": ("Spinning Mill for Sale in Pakistan | M Tech Textile Traders",
+                                         "Spinning mill sale and purchase in Pakistan: buy or sell a complete mill or unit with M Tech, with brokerage, machinery valuation and new mill setup advice."),
     "team.html": ("Our Team | M Tech Textile Traders, Lahore & Faisalabad",
                   "Meet Abdul Rasheed Gill, founder of M Tech Textile Traders, and his four sons who run the Lahore office and Faisalabad warehouse of the textile machinery firm."),
-    "stock.html": ("Machinery in Stock, Faisalabad | M Tech Textile Traders",
-                   "Textile spinning machinery in stock with M Tech Textile Traders, by department: pictures, details and PDF stock lists. Godown in Faisalabad, office in Lahore."),
+    "stock.html": ("Used Machinery in Stock, Faisalabad | M Tech Textile Traders",
+                   "Used textile and spinning machinery in stock with M Tech Textile Traders, by department: pictures, details and PDF stock lists. Godown in Faisalabad."),
     "contact.html": ("Contact M Tech Textile Traders | Lahore 0332-4681423",
                      "Call or WhatsApp M Tech Textile Traders on 0332-4681423. Head office in Manga Mandi, Lahore; machinery warehouse in Darul Ehsan Town, Faisalabad."),
 }
@@ -969,7 +995,7 @@ SVC_MORE = {
    ("Do you buy mills yourselves or only broker them?",
     "Both. We buy and sell complete mills and units ourselves, and we also work as the middleman between a buyer and a seller."),
    ("Can I sell only part of my mill?",
-    "Yes. Along with complete mills we deal in units and sections, and in single machines through our machinery service."),
+    "Yes. Along with complete mills we deal in units and sections, and in single machines through our <a href=\"machinery.html\">machinery service</a>."),
    ("Can you value my mill before I decide to sell?",
     "Yes. Machinery valuation is part of our advisory work. The first consultation is free; for detailed advice, please contact us."),
    ("Do you help set up a new spinning mill?",
@@ -992,27 +1018,27 @@ def build():
     top("services.html", "CollectionPage", services, "Services", nodes=({"@type": "ItemList", "itemListElement": [
         {"@type": "ListItem", "position": i + 1, "name": t, "url": url_of(f"services/{s}.html")} for i, (s, t, _, _) in enumerate(SERVICES)]},))
 
-    svc_page("machinery", "Service 01", "Textile machinery, <span class=\"acc\">new and pre-owned</span>",
+    svc_page("machinery", "Service 01 · Used spinning machinery", "Textile machinery, <span class=\"acc\">new and pre-owned</span>",
         "We buy and sell all types of new and pre-owned textile machinery. Spinning is our core, and we handle other departments when clients need them.",
         "ring-hall.jpg",
-        "<p>Whether you are setting up a new unit, replacing a section, or selling machinery you no longer need, we deal directly. We inspect machinery, value it honestly and arrange the sale or purchase end to end.</p><p>Our warehouse in Faisalabad holds machinery you can see in person, by appointment.</p>",
+        "<p>Whether you are setting up a new unit, replacing a section, or selling machinery you no longer need, we deal directly. We inspect machinery, value it honestly and arrange the sale or purchase end to end.</p><p>Our warehouse in Faisalabad holds machinery you can see in person, by appointment. See what is <a href=\"{rel}stock.html\">in stock now</a>, and the <a href=\"spare-parts.html\">spinning spare parts</a> we supply to keep it running.</p>",
         [("Spinning preparatory", ["Blowroom lines", "Carding machines", "Draw frames", "Lap formers", "Combers", "Simplex / roving frames"]),
          ("Spinning", ["Ring frames", "Compact spinning systems", "Open-end (rotor) spinning", "Doubling and TFO"]),
          ("Winding & finishing", ["Autoconers", "Cone winding", "Yarn conditioning"]),
          ("Other departments, on request", ["Weaving", "Knitting", "Processing", "Utilities"])],
         '<div class="callout"><h3>Selling your machinery?</h3><p>Send the make, model, year and a few photos on WhatsApp. We will tell you what it is worth.</p><a class="btn btn-wa" href="' + wa_link("Assalam o Alaikum M Tech, I want to sell machinery: ") + '" target="_blank" rel="noopener">' + ICON["wa"] + '<span>Send details</span></a></div>')
 
-    svc_page("spare-parts", "Service 02", "Spinning spare parts, <span class=\"acc\">all types</span>",
+    svc_page("spare-parts", "Service 02 · Spare parts, Lahore", "Spinning spare parts, <span class=\"acc\">all types</span>",
         "The parts that keep a spinning line running, supplied for the makes mills actually use.",
         "spare-parts.jpg",
-        "<p>Spare parts are where M Tech began. We supply parts across every department of a spinning mill, new and pre-owned, and help you find the right part for your make and model.</p>",
-        [("Drafting & ring frame", ["Spindles and spindle inserts", "Top rollers", "Rubber cots", "Top and bottom aprons", "Bottom fluted rollers", "Top arms / weighting arms", "Rings and travellers", "Bobbin holders", "Spindle tapes", "Tangential belts"]),
-         ("Carding", ["Cylinder wire", "Doffer wire", "Licker-in wire", "Flat tops", "Card clothing", "Coiler parts"]),
-         ("Combing & drawing", ["Circular combs", "Top combs", "Draw frame rollers", "Cans and can springs"]),
-         ("Simplex & winding", ["Flyers", "Roving bobbins", "Autoconer splicer parts", "Winding drums"]),
-         ("General", ["Bearings", "Gears", "Belts", "Pneumafil and suction parts", "Motors"])])
+        "<p>Spare parts are where M Tech began. We supply parts across every department of a spinning mill, new and pre-owned, and help you find the right part for your make and model. Looking for a whole machine instead? See our <a href=\"machinery.html\">used spinning machinery</a>.</p>",
+        [("Ring frame & drafting parts", ["Spindles and spindle inserts", "Top rollers", "Rubber cots", "Top and bottom aprons", "Bottom fluted rollers", "Top arms / weighting arms", "Rings and travellers", "Bobbin holders", "Spindle tapes", "Tangential belts"]),
+         ("Carding parts", ["Cylinder wire", "Doffer wire", "Licker-in wire", "Flat tops", "Card clothing", "Coiler parts"]),
+         ("Combing & draw frame parts", ["Circular combs", "Top combs", "Draw frame rollers", "Cans and can springs"]),
+         ("Simplex & Autoconer winding parts", ["Flyers", "Roving bobbins", "Autoconer splicer parts", "Winding drums"]),
+         ("General mill parts", ["Bearings", "Gears", "Belts", "Pneumafil and suction parts", "Motors"])])
 
-    svc_page("yarn-cotton", "Service 03", "Yarn and cotton, <span class=\"acc\">traded</span>",
+    svc_page("yarn-cotton", "Service 03 · Yarn traders", "Cotton yarn and cotton, <span class=\"acc\">traded</span>",
         "All kinds of yarn, and cotton both local and imported.",
         "yarn-cones.jpg",
         "<p>Our place in the spinning trade means we know both ends: the cotton that goes in and the yarn that comes out. We trade both, matching buyers and sellers with the counts and qualities they need.</p>",
@@ -1020,7 +1046,7 @@ def build():
          ("Cotton", ["Local cotton", "Imported cotton", "Lint and bales"])],
         '<figure class="wide-img reveal-img"><img src="{rel}assets/img/cotton-bales.jpg" alt="Cotton bales in a warehouse" loading="lazy" width="1376" height="768"></figure>')
 
-    svc_page("mill-sale-purchase", "Service 04", "Mill sale & purchase, <span class=\"acc\">with advice</span>",
+    svc_page("mill-sale-purchase", "Service 04 · Mills, Pakistan", "Spinning mill sale &amp; purchase, <span class=\"acc\">with advice</span>",
         "Buying or selling a complete mill, with an experienced hand on both sides of the table.",
         "mill-exterior.jpg",
         "<p>We have traded more than 50 mills. We buy and sell complete mills and units ourselves, and we act as the middleman when a buyer and seller need someone both sides can trust.</p><p>Advice comes with it. We help owners understand what their machinery is worth, how to set up a new mill, and how to get more from the production they have.</p>",

@@ -883,3 +883,7 @@ body:has(.mtc.open) .fab{opacity:0;pointer-events:none;transform:scale(.8)}
   body:has(.mbar.show) .mtc:not(.open){bottom:calc(14px + env(safe-area-inset-bottom))}
   .fab-tip{display:none}
 }
+
+/* Urdu summary line on service pages */
+.svc-intro .ur{font-family:"Noto Nastaliq Urdu","Jameel Noori Nastaleeq","Noto Naskh Arabic","Segoe UI",Tahoma,serif;font-size:1.05em;line-height:2.1;color:var(--mute);text-align:right;margin-top:14px}
+.svc-intro a,.faq-a a{color:var(--blue);font-weight:600;text-decoration:underline;text-underline-offset:3px}
