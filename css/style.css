@@ -295,6 +295,30 @@ a:hover .more svg{transform:translateX(4px)}
 .callout p{color:rgba(255,255,255,.75);margin:6px 0 0}
 .wide-img img{width:100%;aspect-ratio:21/9;object-fit:cover}
 
+/* service guide + FAQ */
+.guide-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+.guide-item{padding:32px 30px;border-radius:var(--r);background:#fff;border:1px solid var(--line)}
+.guide-item h3{font-size:21px;margin:12px 0 10px;line-height:1.2}
+.guide-item p,.guide-ul{color:var(--mute);font-size:16px;margin:0}
+.guide-item a,.faq-hd a{display:inline-block;padding:3px 0;color:var(--blue);font-weight:600;text-decoration:underline;text-underline-offset:3px}
+.guide-ul{padding-left:18px;display:flex;flex-direction:column;gap:8px}
+.guide-ul b{color:var(--navy)}
+.faq{display:grid;grid-template-columns:.8fr 1.2fr;gap:60px;align-items:start}
+.faq-hd{position:sticky;top:110px;margin-bottom:0}
+.faq-list{border-top:1px solid var(--line)}
+.faq-q{border-bottom:1px solid var(--line)}
+.faq-q summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:22px 0}
+.faq-q summary::-webkit-details-marker{display:none}
+.faq-q summary h3{font-size:19px;line-height:1.3;letter-spacing:-.01em}
+.faq-q summary::after{content:"+";flex:none;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:var(--bg);color:var(--orange);font:700 22px/1 var(--f-h);transition:transform .3s var(--ease),background .25s}
+.faq-q[open] summary::after{transform:rotate(45deg);background:var(--blue-50)}
+.faq-q summary:hover h3{color:var(--blue)}
+.faq-q summary:focus-visible{outline:2px solid var(--blue);outline-offset:4px;border-radius:6px}
+.faq-a{padding:0 52px 24px 0;color:var(--mute);font-size:16.5px}
+.faq-a p{margin:0}
+@media (max-width:900px){.faq{grid-template-columns:1fr;gap:28px}.faq-hd{position:static}}
+@media (max-width:760px){.guide-grid{grid-template-columns:1fr;gap:14px}.guide-item{padding:24px 22px}.faq-q summary{padding:18px 0}.faq-q summary h3{font-size:17px}.faq-a{padding-right:0}}
+
 /* team */
 .ceo{display:grid;grid-template-columns:.8fr 1.2fr;gap:60px;align-items:center}
 .ceo-copy p{color:var(--mute);font-size:18px;margin-top:18px}

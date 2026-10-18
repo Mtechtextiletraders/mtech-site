@@ -156,7 +156,7 @@
   });
 
   /* ---------- staggered groups ---------- */
-  const groups = ['.svc-grid', '.steps', '.tm-grid', '.vals', '.tl', '.svc-list', '.extra', '.grps', '.c-info', '.stats-in', '.story-copy', '.founder-copy', '.ceo-copy', '.cta-in', '.svc-intro'];
+  const groups = ['.svc-grid', '.steps', '.tm-grid', '.vals', '.tl', '.svc-list', '.extra', '.grps', '.c-info', '.stats-in', '.story-copy', '.founder-copy', '.ceo-copy', '.cta-in', '.svc-intro', '.guide-grid'];
   groups.forEach((sel) => document.querySelectorAll(sel).forEach((g) => {
     if (g.closest('.phead, .mem')) return;
     const kids = [...g.children].filter((k) => !k.classList.contains('reveal-lines'));
@@ -164,6 +164,7 @@
     ScrollTrigger.batch(kids, { start: 'top 90%', once: true,
       onEnter: (b) => gsap.to(b, { opacity: 1, y: 0, duration: 1, ease: 'expo.out', stagger: .09, overwrite: true }) });
   }));
+  document.querySelectorAll('.faq-q').forEach((d) => d.addEventListener('toggle', () => ScrollTrigger.refresh()));
   document.querySelectorAll('.chips').forEach((c) => {
     if (c.closest('.mem')) return;
     gsap.from(c.children, { opacity: 0, y: 14, scale: .92, duration: .6, ease: 'back.out(1.8)', stagger: .03, scrollTrigger: { trigger: c, start: 'top 90%' } });
