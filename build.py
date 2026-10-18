@@ -846,7 +846,7 @@ SVC_MORE = {
    sub="What to look at before you agree a price, whether you are buying one machine or a whole section.",
    items=[
     ("Machines we deal in",
-     "<p>Our everyday work is with spinning machinery: Autocoro and other open-end (rotor) machines, ring frames including Zinser, Autoconer winding machines, blowroom lines and draw frames — new and pre-owned, plus machinery we import for clients. Send the make, model and year of what you need or want to sell.</p>"),
+     "<p>Our everyday work is with spinning machinery: Autocoro, RN and other open-end (rotor) machines, ring frames including Zinser, Autoconer winding machines, blowroom lines and draw frames — new and pre-owned, plus machinery we import for clients. Send the make, model and year of what you need or want to sell.</p>"),
     ("Start with make, model and year",
      "<p>The make, model and year of manufacture tell you which generation of technology you are getting, what speeds and counts the machine was built for, and how easy its parts will be to find. Two ring frames with the same spindle count can differ a lot in drafting system, drive and automation, so always note the serial number plate as well as the model name.</p>"),
     ("See it running if you can",
