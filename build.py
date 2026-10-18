@@ -81,8 +81,31 @@ BRANDS = ["Rieter", "Trützschler", "Toyota", "Murata", "Schlafhorst", "Savio", 
 
 NAV = [("index.html", "Home"), ("about.html", "About"), ("services.html", "Services"), ("stock.html", "Stock"), ("team.html", "Team"), ("contact.html", "Contact")]
 
-def head(title, desc, rel, path, extra=""):
-    canon = SITE + "/" + ("" if path == "index.html" else path)
+def clean(path):
+    """Cloudflare Pages serves /about.html at /about (308), so public URLs never carry .html."""
+    return "" if path == "index.html" else re.sub(r"\.html$", "", path)
+
+HREF_RE = re.compile(r'href="((?:\.\./|/)*)((?:[\w-]+/)*[\w-]+)\.html(#[^"]*)?"')
+
+def clean_links(doc, rel):
+    """Point internal links at the clean URL so visitors and crawlers skip the redirect hop."""
+    def fix(m):
+        up, name, frag = m.group(1), m.group(2), m.group(3) or ""
+        if name == "index":
+            name = ""
+            if not up:
+                up = "./"
+        return f'href="{up}{name}{frag}"'
+    return HREF_RE.sub(fix, doc)
+
+def head(title, desc, rel, path, extra="", ld=None, noindex=False):
+    canon = SITE + "/" + clean(path)
+    if len(title) > 60 or len(title) < 50 or len(desc) < 140 or len(desc) > 160:
+        if not noindex and path not in ("stock-folder.html", "stock-item.html"):
+            print(f"  SEO length warning {path}: title {len(title)}, description {len(desc)}")
+    robots = '<meta name="robots" content="noindex, follow">\n' if noindex else ""
+    canon_tag = "" if noindex else f'<link rel="canonical" href="{canon}">\n'
+    ld_tag = f'<script type="application/ld+json">{json.dumps(ld, ensure_ascii=False, separators=(",", ":"))}</script>\n' if ld else ""
     return f'''<!doctype html>
 <html lang="en">
 <head>
@@ -90,21 +113,28 @@ def head(title, desc, rel, path, extra=""):
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{html.escape(title)}</title>
 <meta name="description" content="{html.escape(desc)}">
-<link rel="canonical" href="{canon}">
-<meta name="theme-color" content="#0033F8">
+{robots}{canon_tag}<meta name="theme-color" content="#0033F8">
 <meta property="og:type" content="website">
+<meta property="og:site_name" content="M Tech Textile Traders">
+<meta property="og:locale" content="en_PK">
 <meta property="og:title" content="{html.escape(title)}">
 <meta property="og:description" content="{html.escape(desc)}">
 <meta property="og:url" content="{canon}">
 <meta property="og:image" content="{SITE}/assets/img/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="M Tech Textile Traders, textile machinery, Lahore and Faisalabad">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{html.escape(title)}">
+<meta name="twitter:description" content="{html.escape(desc)}">
+<meta name="twitter:image" content="{SITE}/assets/img/og.jpg">
 <link rel="icon" href="{rel}assets/img/favicon.png" type="image/png" sizes="64x64">
 <link rel="icon" href="{rel}assets/img/icon-192.png" type="image/png" sizes="192x192">
 <link rel="apple-touch-icon" href="{rel}assets/img/apple-touch-icon.png">
 <link rel="preload" href="{rel}assets/fonts/archivo-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="{rel}assets/fonts/hanken-grotesk-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="{rel}{V('css/style.css')}">
-<script>try{{if(sessionStorage.getItem("pt")){{document.documentElement.classList.add("pt-in");setTimeout(function(){{document.documentElement.classList.remove("pt-in")}},2500)}}}}catch(e){{}}</script>
+{ld_tag}<script>try{{if(sessionStorage.getItem("pt")){{document.documentElement.classList.add("pt-in");setTimeout(function(){{document.documentElement.classList.remove("pt-in")}},2500)}}}}catch(e){{}}</script>
 {extra}</head>
 '''
 
@@ -148,16 +178,16 @@ def footer(rel):
         <a href="{wa_link()}" target="_blank" rel="noopener" aria-label="WhatsApp">{ICON["wa"]}</a>
       </div>
     </div>
-    <div><h4>Services</h4><ul>{svc}</ul></div>
-    <div><h4>Company</h4><ul>
+    <div><h2 class="ftr-h">Services</h2><ul>{svc}</ul></div>
+    <div><h2 class="ftr-h">Company</h2><ul>
       <li><a href="{rel}about.html">About M Tech</a></li>
       <li><a href="{rel}stock.html">Stock</a></li>
       <li><a href="{rel}team.html">Our team</a></li>
-      <li><a href="{CEO_SITE}" target="_blank" rel="noopener">Abdul Rasheed Gill</a></li>
+      <li><a href="{CEO_SITE}/" target="_blank" rel="noopener">Abdul Rasheed Gill, CEO</a></li>
       <li><a href="{rel}contact.html">Contact</a></li></ul></div>
-    <div><h4>Reach us</h4><ul class="ftr-c">
+    <div><h2 class="ftr-h">Reach us</h2><ul class="ftr-c">
       <li><a href="tel:{tel(OFFICIAL)}">{ICON["ph"]}{OFFICIAL}</a></li>
-      <li><a href="mailto:{EMAIL}">{ICON["mail"]}<span class="brk">{EMAIL}</span></a></li>
+      <li><a href="mailto:{EMAIL}">{ICON["mail"]}<span class="brk">{EMAIL.replace("@", "<wbr>@")}</span></a></li>
       <li>{ICON["pin"]}<span>Office: {OFFICE}</span></li>
       <li>{ICON["pin"]}<span>Warehouse: {WAREHOUSE}</span></li></ul></div>
   </div>
@@ -177,14 +207,15 @@ def footer(rel):
 </html>
 '''
 
-def page(path, title, desc, body, active=None, bodycls="", rel=None, extra="", scripts="", sitemap=True):
+def page(path, title, desc, body, active=None, bodycls="", rel=None, extra="", scripts="", sitemap=True, ld=None, noindex=False):
     depth = path.count("/")
     rel = "../" * depth if rel is None else rel
     body = body.replace("{rel}", rel)
     ft = footer(rel)
     if scripts:
         ft = ft.replace("</body>", scripts.replace("{rel}", rel) + "\n</body>")
-    out = head(title, desc, rel, path, extra) + f'<body class="{bodycls}">\n' + header(rel, active or path) + f'<main id="main">\n{body}\n</main>\n' + ft
+    out = head(title, desc, rel, path, extra, ld, noindex) + f'<body class="{bodycls}">\n' + header(rel, active or path) + f'<main id="main">\n{body}\n</main>\n' + ft
+    out = clean_links(out, rel)
     full = os.path.join(ROOT, path)
     os.makedirs(os.path.dirname(full), exist_ok=True)
     open(full, "w").write(out)
@@ -482,11 +513,36 @@ services = pagehead("Services", "Machinery, parts, <span class=\"acc\">yarn and 
 {cta_band()}
 '''
 
+def guide_html(gd):
+    """Educational guide section for a service page (general know-how, no company claims beyond the site's facts)."""
+    items = "".join(f'''<article class="guide-item"><span class="val-i">{n + 1:02d}</span><h3>{h}</h3>{b}</article>''' for n, (h, b) in enumerate(gd["items"]))
+    return f'''<section class="sec alt guide">
+  <div class="wrap">
+    <div class="sec-hd"><p class="eyebrow">{gd["eyebrow"]}</p><h2 class="h2 reveal-lines">{gd["h2"]}</h2><p class="sec-sub">{gd["sub"]}</p></div>
+    <div class="guide-grid">{items}</div>
+  </div>
+</section>'''
+
+def faq_html(faqs):
+    qs = "".join(f'''<details class="faq-q"{" open" if n == 0 else ""}><summary><h3>{q}</h3></summary><div class="faq-a"><p>{a}</p></div></details>''' for n, (q, a) in enumerate(faqs))
+    return f'''<section class="sec faq-sec">
+  <div class="wrap faq">
+    <div class="sec-hd faq-hd"><p class="eyebrow">FAQ</p><h2 class="h2 reveal-lines">Questions we are asked</h2><p class="sec-sub">Not answered here? Call or WhatsApp <a href="tel:{tel(OFFICIAL)}">{OFFICIAL}</a>.</p></div>
+    <div class="faq-list">{qs}</div>
+  </div>
+</section>'''
+
+def plain(x):
+    return html.unescape(re.sub(r"<[^>]+>", "", x)).strip()
+
 def svc_page(slug, eyebrow, title, lead, img, intro, groups, extra_html=""):
     i = [s for s, *_ in SERVICES].index(slug)
     others = [x for x in SERVICES if x[0] != slug]
-    g = "".join(f'''<div class="grp"><h3>{gt}</h3><ul class="chips">{"".join(f"<li>{x}</li>" for x in items)}</ul></div>''' for gt, items in groups)
+    g = "".join(f'''<div class="grp"><h2 class="grp-t">{gt}</h2><ul class="chips">{"".join(f"<li>{x}</li>" for x in items)}</ul></div>''' for gt, items in groups)
     nxt = SERVICES[(i + 1) % 4]
+    more = SVC_MORE.get(slug, {})
+    guide = guide_html(more["guide"]) if more.get("guide") else ""
+    faqs = more.get("faqs", [])
     body = pagehead(eyebrow, title, lead, [("index.html", "Home"), ("services.html", "Services"), (None, SERVICES[i][1])], img) + f'''
 <section class="sec">
   <div class="wrap svc-detail">
@@ -495,6 +551,8 @@ def svc_page(slug, eyebrow, title, lead, img, intro, groups, extra_html=""):
     {extra_html}
   </div>
 </section>
+{guide}
+{faq_html(faqs) if faqs else ""}
 <section class="sec alt">
   <div class="wrap">
     <div class="sec-hd"><p class="eyebrow">Other services</p></div>
@@ -504,7 +562,17 @@ def svc_page(slug, eyebrow, title, lead, img, intro, groups, extra_html=""):
   </div>
 </section>
 {cta_band()}'''
-    page(f"services/{slug}.html", f"{SERVICES[i][1]} | M Tech Textile Traders", lead, body, active="services.html")
+    path = f"services/{slug}.html"
+    t, d = SEO[path]
+    ld = graph(webpage(path, "WebPage", t, d),
+               {"@type": "Service", "@id": url_of(path) + "#service", "name": SERVICES[i][1], "serviceType": SERVICES[i][1],
+                "description": d, "url": url_of(path), "provider": BIZ_REF, "areaServed": {"@type": "Country", "name": "Pakistan"},
+                "image": f"{SITE}/assets/img/{img}"},
+               crumbs_ld([("Home", "index.html"), ("Services", "services.html"), (SERVICES[i][1], path)]))
+    if faqs:
+        ld["@graph"].append({"@type": "FAQPage", "@id": url_of(path) + "#faq", "isPartOf": {"@id": url_of(path) + "#webpage"},
+                             "mainEntity": [{"@type": "Question", "name": plain(q), "acceptedAnswer": {"@type": "Answer", "text": plain(a)}} for q, a in faqs]})
+    page(path, t, d, body, active="services.html", ld=ld)
 
 # ---------------------------------------------------------------- TEAM
 team_cards = "".join(f'''<a class="tm" href="{{rel}}team/{t["slug"]}.html">
@@ -565,7 +633,16 @@ def member_page(t):
   </div>
 </section>
 {cta_band()}'''
-    page(f"team/{t['slug']}.html", f"{t['name']}, {t['role']} | M Tech Textile Traders", f"{t['name']}, {t['role']} at M Tech Textile Traders. {t['short']}", body, active="team.html")
+    path = f"team/{t['slug']}.html"
+    title = f"{t['name']}, {t['role']} | M Tech Textile Traders"
+    desc = f"{t['name']}, {t['role']} at M Tech Textile Traders, Lahore. {t['short']}"
+    if len(desc) > 160:
+        desc = f"{t['name']}, {t['role']} at M Tech Textile Traders. {t['short']}"
+    person = {"@type": "Person", "@id": url_of(path) + "#person", "name": t["name"], "jobTitle": t["role"],
+              "telephone": tel(t["phone"]), "image": f"{SITE}/assets/img/{t['img']}", "url": url_of(path), "worksFor": BIZ_REF}
+    ld = graph(webpage(path, "ProfilePage", title, desc, {"mainEntity": {"@id": person["@id"]}}), person,
+               crumbs_ld([("Home", "index.html"), ("Team", "team.html"), (t["name"], path)]))
+    page(path, title, desc, body, active="team.html", ld=ld)
 
 # ---------------------------------------------------------------- CONTACT
 contact = pagehead("Contact", "Talk to us <span class=\"acc\">directly</span>",
@@ -691,11 +768,229 @@ NOTFOUND = pagehead("404", "This page <span class=\"acc\">is not here</span>", "
 <section class="sec"><div class="wrap" style="display:flex;gap:12px;flex-wrap:wrap">
 <a class="btn btn-pri" href="/index.html"><span>Go to home</span></a><a class="btn btn-ghost" href="/contact.html"><span>Contact us</span></a></div></section>'''
 
+# ---------------------------------------------------------------- STRUCTURED DATA
+BIZ_ID = SITE + "/#business"
+CEO_ID = CEO_SITE + "/#person"
+
+def addr(street, city):
+    a = {"@type": "PostalAddress", "addressLocality": city, "addressRegion": "Punjab", "addressCountry": "PK"}
+    if street:
+        a["streetAddress"] = street
+    return a
+
+BUSINESS = {
+    "@type": "LocalBusiness", "@id": BIZ_ID, "name": "M Tech Textile Traders", "url": SITE + "/",
+    "description": "Buying and selling new and pre-owned textile machinery, spinning spare parts, yarn and cotton, and complete spinning mills in Pakistan since 1988.",
+    "logo": SITE + "/assets/img/icon-512.png", "image": SITE + "/assets/img/og.jpg",
+    "telephone": tel(OFFICIAL), "email": EMAIL, "foundingDate": "1988",
+    "founder": {"@type": "Person", "@id": CEO_ID, "name": "Abdul Rasheed Gill", "url": CEO_SITE + "/"},
+    "address": addr("Main Bazar Rasheed Town, Near Post Office, Manga Mandi", "Lahore"),
+    "department": [{"@type": "LocalBusiness", "name": "M Tech Textile Traders, Faisalabad warehouse",
+                    "address": addr("Darul Ehsan Town", "Faisalabad"), "telephone": tel(OFFICIAL)}],
+    "areaServed": {"@type": "Country", "name": "Pakistan"},
+    "contactPoint": {"@type": "ContactPoint", "telephone": tel(OFFICIAL), "contactType": "sales",
+                     "areaServed": "PK", "availableLanguage": ["en", "ur"]},
+    "knowsAbout": ["Textile spinning machinery", "Spinning spare parts", "Yarn and cotton trade", "Spinning mill sale and purchase"],
+    "sameAs": [FB, IG, LI],
+}
+BIZ_REF = {"@id": BIZ_ID, "@type": "LocalBusiness", "name": "M Tech Textile Traders"}
+WEBSITE = {"@type": "WebSite", "@id": SITE + "/#website", "url": SITE + "/", "name": "M Tech Textile Traders",
+           "inLanguage": "en", "publisher": {"@id": BIZ_ID}}
+
+def url_of(path):
+    return SITE + "/" + clean(path)
+
+def crumbs_ld(items):
+    return {"@type": "BreadcrumbList", "itemListElement": [
+        {"@type": "ListItem", "position": i + 1, "name": n, "item": url_of(pth)} for i, (n, pth) in enumerate(items)]}
+
+def graph(*nodes):
+    return {"@context": "https://schema.org", "@graph": list(nodes)}
+
+def webpage(path, kind, name, desc, extra=None):
+    d = {"@type": kind, "@id": url_of(path) + "#webpage", "url": url_of(path), "name": name, "description": desc,
+         "inLanguage": "en", "isPartOf": {"@id": SITE + "/#website"}, "about": {"@id": BIZ_ID}}
+    d.update(extra or {})
+    return d
+
+SEO = {
+    "index.html": ("Textile Machinery in Lahore | M Tech Textile Traders",
+                   "M Tech Textile Traders, Lahore: new and pre-owned textile spinning machinery, spare parts, yarn, cotton and complete mills across Pakistan since 1988."),
+    "about.html": ("About Us | M Tech Textile Traders, Lahore, Since 1988",
+                   "M Tech Textile Traders is a family textile machinery business serving Pakistan's spinning mills since 1988, from Manga Mandi, Lahore and Faisalabad."),
+    "services.html": ("Textile Machinery Services Pakistan | M Tech Textile Traders",
+                      "Textile machinery, spinning spare parts, yarn and cotton trade, and mill sale and purchase in Pakistan, from M Tech Textile Traders, Lahore and Faisalabad."),
+    "services/machinery.html": ("Used Spinning Machinery Pakistan | M Tech Textile Traders",
+                                "Buy or sell new and pre-owned spinning machinery in Pakistan: blowroom, carding, draw frames, combers, simplex, ring frames, autoconers. Lahore, Faisalabad."),
+    "services/spare-parts.html": ("Spinning Spare Parts in Lahore | M Tech Textile Traders",
+                                  "Spinning spare parts for every department of a mill: ring frame, carding, combing, simplex and winding parts. M Tech Textile Traders, Lahore, since 1988."),
+    "services/yarn-cotton.html": ("Yarn & Cotton Trade in Pakistan | M Tech Textile Traders",
+                                  "Yarn and cotton trade in Pakistan: carded, combed, compact and open-end yarn, blends, and local and imported cotton. M Tech Textile Traders, Lahore."),
+    "services/mill-sale-purchase.html": ("Spinning Mill Sale & Purchase | M Tech Textile Traders",
+                                         "Buy or sell a complete spinning mill in Pakistan with M Tech Textile Traders: mill deals, brokerage, machinery valuation and new mill setup advice."),
+    "team.html": ("Our Team | M Tech Textile Traders, Lahore & Faisalabad",
+                  "Meet Abdul Rasheed Gill, founder of M Tech Textile Traders, and his four sons who run the Lahore office and Faisalabad warehouse of the textile machinery firm."),
+    "stock.html": ("Machinery in Stock, Faisalabad | M Tech Textile Traders",
+                   "Textile spinning machinery in stock with M Tech Textile Traders, by department: pictures, details and PDF stock lists. Godown in Faisalabad, office in Lahore."),
+    "contact.html": ("Contact M Tech Textile Traders | Lahore 0332-4681423",
+                     "Call or WhatsApp M Tech Textile Traders on 0332-4681423. Head office in Manga Mandi, Lahore; machinery warehouse in Darul Ehsan Town, Faisalabad."),
+}
+
+# ---------------------------------------------------------------- SERVICE PAGE GUIDES + FAQ
+# Company-specific claims here come only from facts already on the site or in BOT_FACTS (_worker.js),
+# which Sufian supplied. Everything else is general, educational know-how about the service itself.
+# Do not add prices, stock counts, delivery times, guarantees, client names or new numbers here.
+SVC_MORE = {
+ "machinery": dict(
+  guide=dict(eyebrow="Buying guide", h2="Buying or selling used spinning machinery",
+   sub="What to look at before you agree a price, whether you are buying one machine or a whole section.",
+   items=[
+    ("Machines we deal in",
+     "<p>Our everyday work is with spinning machinery: Autocoro and other open-end (rotor) machines, ring frames including Zinser, Autoconer winding machines, blowroom lines and draw frames — new and pre-owned, plus machinery we import for clients. Send the make, model and year of what you need or want to sell.</p>"),
+    ("Start with make, model and year",
+     "<p>The make, model and year of manufacture tell you which generation of technology you are getting, what speeds and counts the machine was built for, and how easy its parts will be to find. Two ring frames with the same spindle count can differ a lot in drafting system, drive and automation, so always note the serial number plate as well as the model name.</p>"),
+    ("See it running if you can",
+     "<p>A machine still running in a mill tells you more than one standing in a shed. Whether that is possible depends on the machine and where it is. If it is not running, look closely at the parts that wear: spindles and drafting rollers on a ring frame, wire on a card, splicers and drums on an Autoconer, rotors and opening rollers on open-end.</p>"),
+    ("Check what comes with it",
+     "<p>Ask exactly what is included: motors and drives, electrical panels, control units, suction and pneumafil, cans, bobbins and any spare parts. Missing accessories add cost and delay later, so they belong in the price discussion, not after it.</p>"),
+    ("Match it to your line",
+     "<p>A machine has to fit the sections before and after it. The output of blowroom, carding and draw frames should balance the ring frames or rotors they feed, and the counts you plan to spin decide whether you need combers, compact spinning or open-end. If you are unsure, ask before you buy.</p>"),
+    ("Plan dismantling, transport and installation",
+     "<p>Used machinery has to be dismantled, marked, loaded, moved and set up again. Agree who does each step, and at whose cost, before the deal is closed. M Tech arranges installation and shifting on request; it is charged separately from the machine.</p>"),
+    ("Selling? Prepare the details",
+     "<p>For a quick and fair valuation, send the make, model, year, number of spindles, deliveries or heads, the present condition, and clear photos of the nameplate and the main parts. The more complete the details, the more useful the first answer. Machinery we have right now is on our <a href=\"{rel}stock.html\">stock page</a>, which changes every week.</p>"),
+   ]),
+  faqs=[
+   ("Do you sell both new and used textile machinery?",
+    "Yes. We buy and sell new and pre-owned textile machinery. Spinning is our core; weaving, knitting, processing and utility machinery we handle on request."),
+   ("Which machinery makes do you deal in?",
+    "Makes that mills in Pakistan commonly run, including Rieter, Trützschler, Toyota, Murata, Schlafhorst, Savio, Zinser, Marzoli and LMW. We trade these makes but are not the official agent of any brand."),
+   ("Do you buy old machinery?",
+    f"Yes. Send the make, model, year and a few photos on WhatsApp to {OFFICIAL} and we will tell you what it is worth."),
+   ("Can I see the machinery before buying?",
+    f"Yes. Machinery at our warehouse in Darul Ehsan Town, Faisalabad can be seen by appointment. Please call {OFFICIAL} before you come so the visit is not wasted."),
+   ("Do you arrange installation and shifting?",
+    "Yes, on request. Installation and shifting are charged separately from the price of the machine."),
+   ("Can you import machinery for us?",
+    "Imports are part of our work. It is mostly good-condition used machinery, with new machinery on request. Timing depends on the machine and the country, so we confirm it case by case."),
+   ("Do you sell outside Pakistan?",
+    "For now we sell within Pakistan. Export is planned."),
+  ]),
+ "spare-parts": dict(
+  guide=dict(eyebrow="Getting the right part", h2="How to match a spinning spare part",
+   sub="A part that almost fits costs more than it saves. This is how to make sure it is the right one.",
+   items=[
+    ("Machine first, then the part",
+     "<p>Tell us the make and model of the machine first, then the part. The same kind of part, a top roller or a spindle for example, comes in different sizes and designs for different machines, and sometimes for different versions of the same model.</p>"),
+    ("Part number, photos, measurements",
+     "<p>The surest match is the part number from the machine's parts catalogue or printed on the old part. If there is no number, send clear photos of the old part from more than one side, ideally next to a measuring tape, with its key sizes: diameter, length, bore, and the number of teeth on a gear.</p>"),
+    ("New or pre-owned",
+     "<p>We supply both. New parts make sense for wear items that decide yarn quality, such as cots, aprons, travellers and card wire. Good pre-owned parts can be a practical choice for slow-wearing parts, especially on older machines where new ones are hard to find. Ask about the condition before you decide.</p>"),
+    ("Know which parts wear",
+     "<ul class=\"guide-ul\"><li><b>Ring frame:</b> rings and travellers, cots, aprons and spindle tapes affect evenness and hairiness, so mills replace them on a schedule.</li><li><b>Carding:</b> cylinder, doffer and licker-in wire and flat tops lose sharpness over time, and blunt wire shows up as neps.</li><li><b>Winding:</b> splicer parts and drums on an Autoconer affect splice strength and cone build.</li></ul>"),
+    ("Test one before you order many",
+     "<p>When the same part is going onto many spindles or deliveries, fit and run one first. It is the easiest way to confirm size and finish before the full quantity is ordered.</p>"),
+    ("Stock and delivery",
+     "<p>Some parts are in stock and others are arranged on order. Parts are delivered all over Pakistan. If a part is not on our <a href=\"{rel}stock.html\">stock page</a>, ask anyway: we check the godown and our network.</p>"),
+    ("Keep a record of what you fit",
+     "<p>A simple list of part numbers, sources and fitting dates for each machine makes the next order faster, and shows which parts are wearing out sooner than they should. That is often the first sign of a setting or alignment problem.</p>"),
+    ("Older machines, hard-to-find parts",
+     "<p>For older or less common models, some new parts are no longer made. Good pre-owned parts taken from dismantled machines are often the practical answer, which is one reason our spare parts and machinery work go hand in hand.</p>"),
+   ]),
+  faqs=[
+   ("Can you find a part from a photo?",
+    f"Often, yes. Send clear photos of the part, its part number if it has one, and the make and model of the machine on WhatsApp to {OFFICIAL}. We will tell you whether we have it or can arrange it."),
+   ("Do you supply new and used spare parts?",
+    "Both. We supply new and pre-owned spinning spare parts for every department of a mill, from blowroom and carding to ring frame and winding."),
+   ("Which machine makes do you supply parts for?",
+    "Parts for the makes mills in Pakistan commonly run, including Rieter, Trützschler, Toyota, Zinser, Marzoli, Murata, Schlafhorst, Savio, Howa and LMW. We are not the official agent of these brands."),
+   ("Are all parts in stock?",
+    "Some parts are in stock and others are arranged on order. Tell us what you need and we will confirm."),
+   ("Do you deliver outside Lahore?",
+    "Yes. Spare parts are delivered all over Pakistan."),
+   ("Can I come and see the parts?",
+    f"Our office is in Manga Mandi, Lahore and our warehouse is in Darul Ehsan Town, Faisalabad. Visits are by appointment, so please call {OFFICIAL} first."),
+  ]),
+ "yarn-cotton": dict(
+  guide=dict(eyebrow="Buying guide", h2="What to specify when buying yarn or cotton",
+   sub="Clear specifications get you an accurate offer and the material you actually need.",
+   items=[
+    ("Count",
+     "<p>Count is the thickness of the yarn. In Pakistan cotton yarn is usually quoted in English count (Ne): the higher the number, the finer the yarn. Give the exact count you need, for example 20s, 30s or 40s, and say whether it is single or ply.</p>"),
+    ("Type of spinning",
+     "<p>Carded yarn is the everyday choice for many fabrics. Combed yarn has the short fibres taken out, so it is cleaner, smoother and stronger and suits finer counts. Compact yarn is spun with an extra condensing zone that cuts hairiness further. Open-end (rotor) yarn is mostly used for coarser counts, in fabrics such as denim and towels.</p>"),
+    ("Fibre and blend",
+     "<p>Say whether you need 100% cotton, polyester, viscose or a blend. PC blends are polyester-rich; CVC (chief value cotton) blends are cotton-rich. Give the blend ratio you need, because two PC yarns of the same count can behave very differently in the fabric.</p>"),
+    ("End use",
+     "<p>Weaving and knitting yarns are made differently. Knitting yarn usually has less twist for a softer fabric and is often waxed; weaving yarn needs more twist for strength on the loom. Tell the seller the end use and the packing you want, usually cones.</p>"),
+    ("Quality figures",
+     "<p>For an important order, look at a yarn test report: count variation, strength, evenness (U% or CVm), imperfections (thin and thick places and neps) and hairiness.</p>"),
+    ("Cotton: local and imported",
+     "<p>When buying cotton the main points are staple length, micronaire (fineness), strength, trash content and moisture. Local and imported cotton differ in these, and the right choice depends on the count and quality you want to spin. We trade both, as lint and in bales.</p>"),
+    ("Quantity, city and timing",
+     "<p>Tell the seller the quantity, the city it has to reach and when you need it. Freight and delivery are worked out around these three, so an enquiry that includes them gets a clearer answer, faster.</p>"),
+    ("One lot or several",
+     "<p>For a large order, ask whether it comes from a single lot. Yarn from different lots, even of the same count and type, can differ slightly in shade after dyeing, which matters for fabric that will be dyed or cut together. For slub and fancy yarns, a sample or a photo of the fabric is the clearest way to describe what you need.</p>"),
+   ]),
+  faqs=[
+   ("Which yarn counts do you deal in?",
+    "Yarn in all counts. Tell us the count, type, blend and quantity you need and we will tell you what we can arrange."),
+   ("Which types of yarn do you trade?",
+    "Carded and combed cotton yarn, compact and open-end yarn, polyester, PC and CVC blends, viscose, and slub and fancy yarn."),
+   ("Do you supply imported cotton?",
+    "Yes. We trade both local and imported cotton, as lint and in bales, depending on what the client needs."),
+   ("What is the minimum order?",
+    f"Minimum order, delivery and freight depend on your requirement. Send us the details on WhatsApp at {OFFICIAL} and we will work out a solution."),
+   ("How do I send a yarn or cotton enquiry?",
+    f"WhatsApp or call {OFFICIAL} with the count, type, blend, quantity and the city it needs to reach."),
+  ]),
+ "mill-sale-purchase": dict(
+  guide=dict(eyebrow="How it works", h2="How a mill sale or purchase works",
+   sub="Selling or buying a mill takes time. These are the stages most deals go through.",
+   items=[
+    ("A first conversation",
+     "<p>It starts with what is being sold or wanted: a complete mill, a unit or a single section, and whether land and building are part of it. A first conversation and initial guidance from us cost nothing.</p>"),
+    ("Machinery list and inspection",
+     "<p>Next comes a full machinery list, department by department: make, model, year, and the number of machines, spindles or rotors. Then the machinery is inspected on site for condition, upkeep and, where possible, how it runs.</p>"),
+    ("Valuation",
+     "<p>A mill's value depends on the age, make and condition of its machinery, how well the line is balanced, which spares and utilities come with it, and whether it is sold as a running unit or for dismantling. A detailed valuation is part of our paid advisory work.</p>"),
+    ("Finding the other side",
+     "<p>We buy and sell mills ourselves, and we act as the middleman when a buyer and a seller want someone both sides can trust.</p>"),
+    ("Agreement and paperwork",
+     "<p>Before anything is signed, both sides should be clear on exactly what is included: machinery, spare parts, and utilities such as compressors, generators and humidification. With M Tech, terms are agreed face to face and every deal is documented. The payment method is agreed per deal.</p>"),
+    ("Dismantling, shifting and new setup",
+     "<p>When machinery moves, it is dismantled section by section, marked, packed and loaded, then set up again. Installation and shifting are available on request. For owners setting up a new mill, our advice covers the machine mix, line balancing and layout.</p>"),
+    ("Running unit or for dismantling",
+     "<p>A buyer who will run the mill where it stands looks at the whole set-up: power, location, building and how the line performs today. A buyer who will move the machinery looks mainly at the machines and the cost of shifting them. Knowing which kind of buyer you are dealing with shapes both the price and the timeline.</p>"),
+    ("More than the machines",
+     "<p>A mill's running cost depends on more than its machinery. Power supply and generators, compressors, humidification and air conditioning, and the state of the building should all be checked alongside the machines, because they affect both the price and what it will cost to run.</p>"),
+   ]),
+  faqs=[
+   ("Do you buy mills yourselves or only broker them?",
+    "Both. We buy and sell complete mills and units ourselves, and we also work as the middleman between a buyer and a seller."),
+   ("Can I sell only part of my mill?",
+    "Yes. Along with complete mills we deal in units and sections, and in single machines through our machinery service."),
+   ("Can you value my mill before I decide to sell?",
+    "Yes. Machinery valuation is part of our advisory work. The first consultation is free; for detailed advice, please contact us."),
+   ("Do you help set up a new spinning mill?",
+    "Yes. New mill setup advice covers the machine mix, line balancing and layout, and planning for the production you want."),
+   ("Which cities do you work in?",
+    "Industrial cities all over Pakistan, including Karachi, Hyderabad, Nooriabad, Lahore, Faisalabad, Multan, Sheikhupura and Mirpur."),
+   ("How do I start?",
+    f"Call or WhatsApp {OFFICIAL} with the location of the mill and a short description of what you want to sell or buy, and we will arrange a meeting."),
+  ]),
+}
+
 def build():
-    page("index.html", "M Tech Textile Traders | New & Pre-owned Textile Machinery, Lahore",
-         "M Tech Textile Traders buys and sells new and pre-owned textile machinery, spinning spare parts, yarn and cotton, and complete mills across Pakistan. Since 1988.", home, bodycls="home" + (" vidhero" if HAS_HERO_VID else ""))
-    page("about.html", "About | M Tech Textile Traders", "The story of M Tech Textile Traders: a family business serving Pakistan's spinning industry since 1988.", about)
-    page("services.html", "Services | M Tech Textile Traders", "Textile machinery, spinning spare parts, yarn and cotton trade, and mill sale and purchase.", services)
+    def top(path, kind, body, crumb=None, nodes=(), **kw):
+        t, d = SEO[path]
+        extra = [crumbs_ld([("Home", "index.html"), (crumb, path)])] if crumb else []
+        page(path, t, d, body, ld=graph(webpage(path, kind, t, d), *nodes, *extra), **kw)
+
+    top("index.html", "WebPage", home, nodes=(BUSINESS, WEBSITE), bodycls="home" + (" vidhero" if HAS_HERO_VID else ""))
+    top("about.html", "AboutPage", about, "About")
+    top("services.html", "CollectionPage", services, "Services", nodes=({"@type": "ItemList", "itemListElement": [
+        {"@type": "ListItem", "position": i + 1, "name": t, "url": url_of(f"services/{s}.html")} for i, (s, t, _, _) in enumerate(SERVICES)]},))
 
     svc_page("machinery", "Service 01", "Textile machinery, <span class=\"acc\">new and pre-owned</span>",
         "We buy and sell all types of new and pre-owned textile machinery. Spinning is our core, and we handle other departments when clients need them.",
@@ -732,19 +1027,21 @@ def build():
         [("Deals", ["Complete mill sale", "Complete mill purchase", "Units and sections", "Middleman / brokerage"]),
          ("Advisory", ["Machinery valuation", "New mill setup", "Production advice", "Upgrade planning", "Installation and shifting on request"])])
 
-    page("team.html", "Team | M Tech Textile Traders", "Meet Abdul Rasheed Gill and his four sons, the family behind M Tech Textile Traders.", team)
+    top("team.html", "AboutPage", team, "Team")
     for t in TEAM:
         member_page(t)
-    page("stock.html", "Stock | M Tech Textile Traders", "Textile machinery in stock with M Tech Textile Traders, by department: pictures, details and downloadable stock lists.", stock_index, scripts=STOCK_SCRIPTS)
+    top("stock.html", "CollectionPage", stock_index, "Stock", scripts=STOCK_SCRIPTS)
     page("stock-folder.html", "Stock | M Tech Textile Traders", "Stock with pictures and details.", stock_folder, active="stock.html", rel="/", scripts=STOCK_SCRIPTS, sitemap=False, bodycls="stk-page")
     page("stock-item.html", "Stock | M Tech Textile Traders", "Stock with pictures and details.", stock_item, active="stock.html", rel="/", scripts=STOCK_SCRIPTS, sitemap=False, bodycls="stk-page")
-    page("contact.html", "Contact | M Tech Textile Traders", f"Call or WhatsApp M Tech Textile Traders on {OFFICIAL}. Office in Manga Mandi, Lahore; warehouse in Faisalabad.", contact)
+    top("contact.html", "ContactPage", contact, "Contact", nodes=(BUSINESS,))
 
     # 404 with absolute paths
-    nf = head("Page not found | M Tech Textile Traders", "Page not found.", "/", "404.html") + '<body>\n' + header("/", "") + f'<main id="main">{NOTFOUND.replace("{rel}", "/")}</main>' + footer("/")
-    open(os.path.join(ROOT, "404.html"), "w").write(nf)
+    nf = head("Page not found | M Tech Textile Traders", "This page could not be found. Browse textile machinery, spinning spare parts and stock from M Tech Textile Traders, Lahore.", "/", "404.html", noindex=True) + '<body>\n' + header("/", "") + f'<main id="main">{NOTFOUND.replace("{rel}", "/")}</main>' + footer("/")
+    open(os.path.join(ROOT, "404.html"), "w").write(clean_links(nf, "/"))
 
-    urls = "".join(f"<url><loc>{SITE}/{'' if p == 'index.html' else p}</loc></url>" for p in PAGES)
+    import datetime
+    lastmod = os.environ.get("LASTMOD") or datetime.date.today().isoformat()
+    urls = "".join(f"<url><loc>{SITE}/{clean(p)}</loc><lastmod>{lastmod}</lastmod></url>" for p in PAGES)
     open(os.path.join(ROOT, "sitemap.xml"), "w").write(f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{urls}</urlset>\n')
     open(os.path.join(ROOT, "robots.txt"), "w").write(f"User-agent: *\nAllow: /\nDisallow: /mtech-panel/\nDisallow: /api/\nSitemap: {SITE}/sitemap.xml\n")
     print("built", len(PAGES), "pages")

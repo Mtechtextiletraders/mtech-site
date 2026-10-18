@@ -300,7 +300,7 @@ COMPANY
 - Track record: more than 50 mills bought, sold or shifted; more than 100 factory owners advised; work in industrial cities all over Pakistan (Karachi, Hyderabad, Nooriabad, Lahore, Faisalabad, Multan, Sheikhupura, Mirpur and others).
 - Sales are inside Pakistan for now; exports are planned soon.
 - Office: Main Bazar Rasheed Town, Near Post Office, Manga Mandi, Lahore. Godown (warehouse): Darul Ehsan Town, Faisalabad.
-- Website pages: mtechtextiletraders.com (services, machinery stock at mtechtextiletraders.com/stock.html, team, contact). CEO profile: ceo.mtechtextiletraders.com.
+- Website pages: mtechtextiletraders.com (services, machinery stock at mtechtextiletraders.com/stock, team, contact). CEO profile: ceo.mtechtextiletraders.com.
 - Social: Facebook "mtechtextile", Instagram "mtechtextiletrader", LinkedIn "mtechtextiletraders".
 
 SERVICES
@@ -321,7 +321,7 @@ SERVICES
 HOW A DEAL WORKS
 1) Customer says what they need (machine to buy or sell, a part, yarn, cotton, a mill) by call or WhatsApp. 2) M Tech checks and values the machinery honestly. 3) Terms are agreed face to face and every deal is documented. 4) Dispatch from the godown; installation/shifting on request.
 - To sell a machine: send make, model, year and a few photos on WhatsApp to get a valuation.
-- Stock changes every week. Machinery stock with pictures: mtechtextiletraders.com/stock.html. If a machine is not listed, M Tech checks its godown and network.
+- Stock changes every week. Machinery stock with pictures: mtechtextiletraders.com/stock. If a machine is not listed, M Tech checks its godown and network.
 - Payment: the method is agreed per deal; most methods are available. A proper invoice / sales tax invoice can be provided if the customer asks.
 
 VISITS AND TIMINGS
@@ -474,6 +474,8 @@ export default {
       }
       const m = p.match(/^\/stock\/([^/]+)(?:\/([a-z0-9]+))?\/?$/);
       if (m && env.DB) return await stockPage(req, env, url, m[2] ? [m[1], m[2]] : [m[1]]);
+      // the bare stock templates are only shells for /stock/<folder>[/<item>]; never index them on their own
+      if (/^\/stock-(folder|item)(\.html)?\/?$/.test(p)) return Response.redirect(new URL('/stock', url).toString(), 301);
     } catch (e) {
       return err('Server error: ' + (e && e.message ? e.message : e), 500);
     }
