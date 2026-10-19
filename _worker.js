@@ -429,6 +429,13 @@ async function stockPage(req, env, url, parts) {
   }
   let title = `${f.name} | Stock | M Tech Textile Traders`;
   let desc = `${f.name} in stock with M Tech Textile Traders: pictures and details of every item.`;
+  // the visible heading is written on the server too, so the page does not jump when stock.js fills it in
+  let h1 = f.name, crumb = f.name, lead = null, eyebrow = null;
+  if (parts.length === 1) {
+    const c = await env.DB.prepare('SELECT COUNT(*) AS n FROM entries WHERE folder_id = ?').bind(f.id).first();
+    const n = (c && c.n) || 0;
+    lead = n ? `${n} ${n === 1 ? 'item' : 'items'} in stock. Open any item to see all its pictures, or download the full list as a PDF.` : 'This folder is empty right now.';
+  }
   if (parts.length > 1) {
     const e = parseEntry(await env.DB.prepare('SELECT * FROM entries WHERE id = ? AND folder_id = ?').bind(parts[1], f.id).first());
     if (!e) {
@@ -437,6 +444,8 @@ async function stockPage(req, env, url, parts) {
     }
     const name = e.data[f.fields[0] && f.fields[0].id] || f.name;
     title = `${name} | ${f.name} | M Tech Textile Traders`;
+    h1 = crumb = name; eyebrow = f.name;
+    lead = e.photos.length ? `${e.photos.length} ${e.photos.length === 1 ? 'picture' : 'pictures'}` : 'Pictures available on request.';
     desc = f.fields.filter((x) => e.data[x.id] && !x.long).map((x) => `${x.label}: ${e.data[x.id]}`).join(' · ').slice(0, 300) || desc;
   }
   return new HTMLRewriter()
@@ -446,6 +455,11 @@ async function stockPage(req, env, url, parts) {
     .on('meta[property="og:description"]', { element(el) { el.setAttribute('content', desc); } })
     .on('link[rel="canonical"]', { element(el) { el.setAttribute('href', `https://mtechtextiletraders.com${url.pathname}`); } })
     .on('meta[property="og:url"]', { element(el) { el.setAttribute('content', `https://mtechtextiletraders.com${url.pathname}`); } })
+    .on('#stkTitle', { element(el) { el.setInnerContent(String(h1)); } })
+    .on('#stkCrumb', { element(el) { el.setInnerContent(String(crumb)); } })
+    .on('#stkLead', { element(el) { if (lead !== null) el.setInnerContent(lead); } })
+    .on('#stkEyebrow', { element(el) { if (eyebrow !== null) el.setInnerContent(String(eyebrow)); } })
+    .on('#stkFolderLink', { element(el) { if (eyebrow !== null) { el.setInnerContent(String(f.name)); el.setAttribute('href', `/stock/${encodeURIComponent(f.slug)}`); } } })
     .transform(new Response(res.body, { status: 200, headers: res.headers }));
 }
 
