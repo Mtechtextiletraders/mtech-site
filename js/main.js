@@ -5,10 +5,6 @@
   const hasGSAP = typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined';
   const yr = document.getElementById('yr'); if (yr) yr.textContent = new Date().getFullYear();
 
-  /* ---------- hero footage: lighter file on phones ---------- */
-  const hv = document.querySelector('.hero-vid');
-  if (hv && !reduce) { hv.src = matchMedia('(max-width: 760px)').matches ? hv.dataset.m : hv.dataset.d; const pp = hv.play(); if (pp) pp.catch(() => {}); }
-
   /* ---------- header ---------- */
   const hdr = document.getElementById('hdr');
   let lastY = 0;
@@ -63,12 +59,18 @@
     gsap.to(o, { v: end, duration: dur, ease: 'power3.out', onUpdate: () => { el.textContent = Math.round(o.v); } });
   };
 
-  /* ---------- 3D machine: load three.js only on the page that needs it ---------- */
+  /* ---------- three.js scenes: one shared bundle, loaded only where needed ---------- */
+  const loadJS = (src) => new Promise((ok, no) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = no; document.body.appendChild(s); });
+  let threeP = null;
+  const three = (src) => threeP || (threeP = window.THREE ? Promise.resolve() : loadJS(src));
+  const cine = document.querySelector('.cine');
+  if (cine) {
+    if (reduce || !hasGSAP) cine.classList.add('rm');
+    three(cine.dataset.three).then(() => loadJS(cine.dataset.cine)).catch(() => loadJS(cine.dataset.cine));
+  }
   const mc = document.getElementById('machine');
   if (mc) {
-    const base = document.querySelector('script[src*="js/main.js"]').src.replace(/main\.js.*$/, '');
-    const load = (src) => new Promise((ok, no) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = no; document.body.appendChild(s); });
-    const go = () => load(base + 'vendor/three.min.js').then(() => load(base + 'machine3d.js')).catch(() => mc.classList.add('ready'));
+    const go = () => three(cine ? cine.dataset.three : '').then(() => loadJS(mc.dataset.js)).catch(() => mc.classList.add('ready'));
     new IntersectionObserver((en, ob) => { if (en[0].isIntersecting) { ob.disconnect(); go(); } }, { rootMargin: '1500px 0px' }).observe(mc);
   }
 
@@ -96,34 +98,18 @@
     h.innerHTML = `<span class="rl"><span>${h.innerHTML}</span></span>`;
   });
 
-  /* ---------- hero intro ---------- */
-  const hero = document.querySelector('.hero');
-  if (hero) {
-    const tl = gsap.timeline({ defaults: { ease: 'expo.out' } });
-    tl.from('.hero .eyebrow', { y: 20, opacity: 0, duration: .8 })
-      .from('.hero-h .ln > span', { yPercent: 110, duration: 1.2, stagger: .12 }, '-=.5')
-      .from('.hero-sub', { y: 24, opacity: 0, duration: 1 }, '-=.8')
-      .from('.hero-btns .btn', { y: 24, opacity: 0, duration: .9, stagger: .1 }, '-=.8')
-      .from('.ring', { scale: .6, opacity: 0, rotate: -60, duration: 1.8, stagger: .15 }, 0.1)
-      .from('#lgGear', { rotate: -120, opacity: 0, duration: 1.6, ease: 'power4.out' }, 0.35)
-      .from('#lgArc', { scale: 0, opacity: 0, duration: 1.2, ease: 'back.out(1.6)' }, 0.75)
-      .from('#lgM', { yPercent: 40, opacity: 0, duration: 1.3 }, 0.55)
-      .from('.hero-card', { y: 30, opacity: 0, scale: .9, duration: 1, stagger: .15, ease: 'back.out(1.6)' }, 1.0)
-      .add(() => hero.querySelectorAll('.hero-card [data-count]').forEach((e) => countUp(e, 1.8)), 1.0);
-
-    // scroll: gear turns, art drifts
-    gsap.to('.hero-art', { yPercent: 14, ease: 'none', scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: true } });
-    gsap.to('.hero-copy', { yPercent: -8, opacity: .3, ease: 'none', scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: true } });
-
-    // pointer tilt on desktop
-    if (matchMedia('(hover:hover) and (pointer:fine)').matches) {
-      const art = document.querySelector('.hero-logo');
-      const qx = gsap.quickTo(art, 'x', { duration: .8, ease: 'power3' }), qy = gsap.quickTo(art, 'y', { duration: .8, ease: 'power3' });
-      hero.addEventListener('pointermove', (e) => {
-        const r = hero.getBoundingClientRect();
-        qx(((e.clientX - r.left) / r.width - .5) * 26); qy(((e.clientY - r.top) / r.height - .5) * 20);
-      });
-    }
+  /* ---------- cinematic hero: first chapter copy ---------- */
+  const cineSec = document.querySelector('.cine');
+  if (cineSec) {
+    const intro = () => {
+      const tl = gsap.timeline({ defaults: { ease: 'expo.out' } });
+      tl.from('.cine-ch[data-ch="0"] .eyebrow', { y: 20, opacity: 0, duration: .8, clearProps: 'all' })
+        .from('.cine .hero-h .ln > span', { yPercent: 110, duration: 1.2, stagger: .12, clearProps: 'transform' }, '-=.5')
+        .from('.cine-ch[data-ch="0"] .hero-sub, .cine-ch[data-ch="0"] .hero-chips', { y: 24, opacity: 0, duration: 1, clearProps: 'all' }, '-=.8')
+        .from('.cine-ch[data-ch="0"] .hero-btns .btn', { y: 24, opacity: 0, duration: .9, stagger: .1, clearProps: 'transform,opacity' }, '-=.8')
+        .from('.cine-rail li', { y: 12, opacity: 0, duration: .8, stagger: .06, clearProps: 'all' }, '-=.7');
+    };
+    if (html.classList.contains('ld')) addEventListener('mt:intro', intro, { once: true }); else intro();
   }
 
   /* ---------- page head intro ---------- */
@@ -289,9 +275,9 @@
   gsap.set(pt, { y: 0, yPercent: 100 }); // reset the CSS translateY(100%) so GSAP does not read it as a fixed pixel offset
   if (html.classList.contains('pt-in')) {
     try { sessionStorage.removeItem('pt'); } catch (e) {}
-    gsap.set(pt, { yPercent: 0 }); html.classList.remove('pt-in');
+    pt.classList.add('go'); gsap.set(pt, { yPercent: 0 }); html.classList.remove('pt-in');
     gsap.to(pt, { yPercent: -100, duration: .9, ease: 'expo.inOut', delay: .05 });
-    setTimeout(() => gsap.set(pt, { yPercent: -100 }), 2000); // never leave the logo screen on top
+    setTimeout(() => { gsap.set(pt, { yPercent: -100 }); pt.classList.remove('go'); }, 2000); // never leave the logo screen on top
   } else gsap.set(pt, { yPercent: 100 });
   document.addEventListener('click', (e) => {
     const a = e.target.closest('a'); if (!a || e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;
@@ -300,10 +286,10 @@
     if (u.origin !== location.origin || (u.pathname === location.pathname && u.hash) || !/(\.html|\/|\/[\w-]+)$/.test(u.pathname)) return;
     e.preventDefault();
     try { sessionStorage.setItem('pt', '1'); } catch (er) {}
-    gsap.fromTo(pt, { yPercent: 100 }, { yPercent: 0, duration: .7, ease: 'expo.inOut', onComplete: () => { location.href = u.href; } });
+    pt.classList.add('go'); gsap.fromTo(pt, { yPercent: 100 }, { yPercent: 0, duration: .7, ease: 'expo.inOut', onComplete: () => { location.href = u.href; } });
     setTimeout(() => { location.href = u.href; }, 1200);
   });
-  addEventListener('pageshow', (e) => { if (e.persisted) { try { sessionStorage.removeItem('pt'); } catch (er) {} html.classList.remove('pt-in'); gsap.set(pt, { yPercent: 100 }); } });
+  addEventListener('pageshow', (e) => { if (e.persisted) { try { sessionStorage.removeItem('pt'); } catch (er) {} html.classList.remove('pt-in'); gsap.set(pt, { yPercent: 100 }); pt.classList.remove('go'); } });
 
   /* ---------- 3D tilt on cards ---------- */
   if (matchMedia('(hover:hover) and (pointer:fine)').matches) {

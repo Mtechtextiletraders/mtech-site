@@ -134,7 +134,7 @@ def head(title, desc, rel, path, extra="", ld=None, noindex=False):
 <link rel="preload" href="{rel}assets/fonts/archivo-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="{rel}assets/fonts/hanken-grotesk-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="{rel}{V('css/style.css')}">
-{ld_tag}<script>try{{if(sessionStorage.getItem("pt")){{document.documentElement.classList.add("pt-in");setTimeout(function(){{document.documentElement.classList.remove("pt-in")}},2500)}}}}catch(e){{}}</script>
+{ld_tag}<script>try{{var d=document.documentElement;if(sessionStorage.getItem("pt")){{d.classList.add("pt-in");setTimeout(function(){{d.classList.remove("pt-in")}},2500)}}else if(!sessionStorage.getItem("ld")&&!matchMedia("(prefers-reduced-motion: reduce)").matches){{sessionStorage.setItem("ld","1");d.classList.add("ld");setTimeout(function(){{d.classList.remove("ld")}},3200)}}}}catch(e){{}}</script>
 {extra}</head>
 '''
 
@@ -191,6 +191,7 @@ def footer(rel):
       <li>{ICON["pin"]}<span>Office: {OFFICE}</span></li>
       <li>{ICON["pin"]}<span>Warehouse: {WAREHOUSE}</span></li></ul></div>
   </div>
+  <div class="ftr-mark" aria-hidden="true"><div class="ftr-mark-in">{"".join(f'<span>{c}</span>' if c != " " else '<span class="sp"> </span>' for c in "M TECH")}</div></div>
   <div class="wrap ftr-bot">
     <span>© <span id="yr">2026</span> M Tech Textile Traders. All rights reserved.</span>
     <span class="credit">Designed by <a href="https://navifexpro.com" target="_blank" rel="noopener">navifexpro.com</a></span>
@@ -202,6 +203,7 @@ def footer(rel):
 <script src="{rel}js/vendor/ScrollTrigger.min.js" defer></script>
 <script src="{rel}js/vendor/lenis.min.js" defer></script>
 <script src="{rel}{V('js/main.js')}" defer></script>
+<script src="{rel}{V('js/motion.js')}" defer></script>
 <script src="{rel}{V('js/chat.js')}" defer></script>
 </body>
 </html>
@@ -254,6 +256,12 @@ def gear_svg(teeth=24, r=300, depth=34, cls="gear"):
             f'<circle cx="400" cy="400" r="{r-70}" fill="none" stroke="currentColor" stroke-width="2"/>'
             f'<circle cx="400" cy="400" r="60" fill="none" stroke="currentColor" stroke-width="2"/></svg>')
 
+def founder_mark(cls="founder-img"):
+    """Brand plate in place of a portrait (no photos of the founder on this site)."""
+    return (f'<div class="{cls} fmark reveal-img" aria-hidden="true"><div class="fmark-gear">{gear_svg(16, 300, 46, "fg")}</div>'
+            '<img class="fmark-logo" src="{rel}assets/img/logo.png" alt="" width="640" height="333" loading="lazy">'
+            '<span class="fmark-y">1988</span><span class="fmark-t">Founded in Manga Mandi, Lahore</span></div>')
+
 def cta_band(title="Looking for a machine, a part, or a buyer?", text="Tell us what you need. We answer on call and WhatsApp, and godown visits are by appointment."):
     return f'''<section class="cta-band">
   <div class="wrap cta-in">
@@ -266,9 +274,6 @@ def cta_band(title="Looking for a machine, a part, or a buyer?", text="Tell us w
 </section>'''
 
 # ---------------------------------------------------------------- HOME
-HAS_HERO_VID = os.path.exists(os.path.join(ROOT, "assets/video/hero.mp4"))
-HERO_CLS = " has-vid" if HAS_HERO_VID else ""
-HERO_VID = ('<div class="hero-media" aria-hidden="true"><video class="hero-vid" data-d="{rel}assets/video/hero.mp4" data-m="{rel}assets/video/hero-m.mp4" poster="{rel}assets/video/hero.jpg" autoplay muted loop playsinline preload="auto"></video><div class="hero-veil"></div></div>' if HAS_HERO_VID else "")
 brand_row = lambda items: "".join(f'<span class="bm">{b}</span><i aria-hidden="true">·</i>' for b in items)
 def _a(body):
     return f'<svg viewBox="0 0 220 150" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">{body}</svg>'
@@ -307,32 +312,54 @@ LINE = [("Blowroom", "Opening & cleaning"), ("Carding", "Card & web"), ("Draw fr
         ("Simplex", "Roving"), ("Ring frame", "Spinning"), ("Autoconer", "Winding"), ("Open-end", "Rotor spinning")]
 
 home = f'''
-<section class="hero{HERO_CLS}" id="top">
-  {HERO_VID}<div class="hero-grid-bg" aria-hidden="true"></div>
-  <div class="wrap hero-in">
-    <div class="hero-copy">
-      <p class="eyebrow"><span class="dot"></span> Lahore · Faisalabad · Since 1988</p>
-      <h1 class="hero-h">
-        <span class="ln"><span>Textile machinery,</span></span>
-        <span class="ln"><span>bought and sold</span></span>
-        <span class="ln"><span class="acc">the right way.</span></span>
-      </h1>
-      <p class="hero-sub">We specialize in buying and selling all types of new and pre-owned textile machinery. Spinning is our core, with spare parts, yarn and cotton, and complete mills alongside it.</p>
-      <ul class="hero-chips" aria-label="M Tech in numbers"><li><b>1988</b> Founded</li><li><b>50+</b> Mills traded</li><li><b>100+</b> Owners advised</li></ul>
-      <div class="hero-btns">
-        <a class="btn btn-pri btn-lg" href="{{rel}}services.html"><span>Our services</span>{ICON["arr"]}</a>
-        <a class="btn btn-wa btn-lg" href="{wa_link('Assalam o Alaikum M Tech, I want to ask about ')}" target="_blank" rel="noopener">{ICON["wa"]}<span>WhatsApp</span></a>
-      </div>
+<section class="cine" id="top" aria-label="M Tech Textile Traders, since 1988" data-three="{{rel}}{V('js/vendor/three-mt.min.js')}" data-cine="{{rel}}{V('js/cine.js')}">
+  <div class="cine-pin">
+    <div class="cine-stage" aria-hidden="true">
+      <div class="cine-fb"><img src="{{rel}}assets/video/hero.jpg" alt="" width="1600" height="900" fetchpriority="high"><div class="hero-veil"></div><div class="hero-logo">{logo_svg("hl", ids=True)}</div></div>
+      <div class="cine-gl"></div>
+      <svg class="cine-svg"></svg>
+      <div class="cine-labs"></div>
+      <div class="cine-grain"></div>
     </div>
-    <div class="hero-art" aria-hidden="true">
-      <div class="ring r1">{gear_svg(32, 330, 26, "g1")}</div>
-      <div class="ring r2">{gear_svg(18, 300, 40, "g2")}</div>
-      <div class="hero-logo">{logo_svg("hl", ids=True)}</div>
-      <div class="hero-card c1"><b data-count="1988" data-plain>1988</b><span>Founded</span></div>
-      <div class="hero-card c2"><b><span data-count="50">50</span>+</b><span>Mills traded</span></div>
+    <div class="wrap cine-in">
+      <article class="cine-ch on" data-ch="0">
+        <p class="eyebrow"><span class="dot"></span> Lahore · Faisalabad · Since 1988</p>
+        <h1 class="hero-h">
+          <span class="ln"><span>Textile machinery,</span></span>
+          <span class="ln"><span>bought and sold</span></span>
+          <span class="ln"><span class="acc">the right way.</span></span>
+        </h1>
+        <p class="hero-sub">We specialize in buying and selling all types of new and pre-owned textile machinery. Spinning is our core, with spare parts, yarn and cotton, and complete mills alongside it.</p>
+        <ul class="hero-chips" aria-label="M Tech in numbers"><li><b>1988</b> Founded</li><li><b>50+</b> Mills traded</li><li><b>100+</b> Owners advised</li></ul>
+        <div class="hero-btns">
+          <a class="btn btn-pri btn-lg" href="{{rel}}services.html"><span>Our services</span>{ICON["arr"]}</a>
+          <a class="btn btn-wa btn-lg" href="{wa_link('Assalam o Alaikum M Tech, I want to ask about ')}" target="_blank" rel="noopener">{ICON["wa"]}<span>WhatsApp</span></a>
+        </div>
+      </article>
+      <article class="cine-ch" data-ch="1">
+        <p class="cine-num"><b>02</b><span>In motion</span></p>
+        <h2 class="cine-h">Gears, spindles and cones that still turn true.</h2>
+        <p class="cine-p">We check the parts that keep a spinning line turning before a machine changes hands, and tell you honestly what it is worth.</p>
+      </article>
+      <article class="cine-ch" data-ch="2">
+        <p class="cine-num"><b>03</b><span>Inside the unit</span></p>
+        <h2 class="cine-h">From blowroom to cone, we know every part.</h2>
+        <p class="cine-p">Ring frames, Autocoro and open-end rotor machines, Autoconers, blowroom and drawing. New and pre-owned, with the spare parts to keep them running.</p>
+      </article>
+      <article class="cine-ch" data-ch="3">
+        <p class="cine-num"><b>04</b><span>Since 1988</span></p>
+        <h2 class="cine-h">A machine, a part or a buyer? Ask us.</h2>
+        <p class="cine-year"><b data-y>2026</b><span>In the spinning trade since 1988, from Manga Mandi, Lahore.</span></p>
+        <div class="hero-btns">
+          <a class="btn btn-wa btn-lg" href="{wa_link('Assalam o Alaikum M Tech, I want to ask about ')}" target="_blank" rel="noopener">{ICON["wa"]}<span>WhatsApp {OFFICIAL}</span></a>
+          <a class="btn btn-ghost-w btn-lg" href="tel:{tel(OFFICIAL)}">{ICON["ph"]}<span>Call now</span></a>
+        </div>
+      </article>
     </div>
+    <ol class="cine-rail" aria-hidden="true"><li class="on"><i>01</i><span>Reveal</span></li><li><i>02</i><span>In motion</span></li><li><i>03</i><span>Inside the unit</span></li><li><i>04</i><span>Since 1988</span></li></ol>
+    <div class="cine-bar" aria-hidden="true"><i></i></div>
+    <div class="scroll-cue" aria-hidden="true"><span></span></div>
   </div>
-  <div class="scroll-cue" aria-hidden="true"><span></span></div>
 </section>
 
 <section class="brands" aria-label="Machinery makes we deal in">
@@ -368,7 +395,7 @@ home = f'''
   </div>
 </section>
 
-<section class="mc" id="machine" aria-label="Inside an Autoconer winding unit">
+<section class="mc" id="machine" aria-label="Inside an Autoconer winding unit" data-js="{{rel}}{V('js/machine3d.js')}">
   <div class="mc-pin">
     <div class="mc-bg" aria-hidden="true"></div>
     <div class="wrap mc-in">
@@ -429,7 +456,7 @@ home = f'''
 
 <section class="sec founder">
   <div class="wrap founder-in">
-    <div class="founder-img reveal-img"><img src="{{rel}}assets/img/ceo.jpg" alt="Abdul Rasheed Gill, Founder and CEO of M Tech Textile Traders" loading="lazy" width="900" height="900"></div>
+    {founder_mark()}
     <div class="founder-copy">
       <p class="eyebrow">Founder & CEO</p>
       <h2 class="h2 reveal-lines">Abdul Rasheed Gill</h2>
@@ -457,7 +484,7 @@ about = pagehead("About M Tech", "A family business, <span class=\"acc\">built o
       <p>The business started with spare parts. It grew into machinery, then complete mills, and then imports from abroad. Through all of it, the work stayed the same: know the machine, value it honestly, and stand behind the deal.</p>
       <p>Today M Tech is run by Abdul Rasheed Gill and his four sons, from our head office in Manga Mandi, Lahore, and our warehouse in Darul Ehsan Town, Faisalabad.</p>
     </div>
-    <figure class="story-img reveal-img"><img src="{{rel}}assets/img/family.jpg" alt="Abdul Rasheed Gill with two of his sons" loading="lazy" width="1400" height="933"><figcaption>Abdul Rasheed Gill with his sons</figcaption></figure>
+    <figure class="story-img reveal-img"><img src="{{rel}}assets/img/spare-parts.jpg" alt="Spinning spare parts: rollers, bearings and cots on a workbench" loading="lazy" width="1376" height="768"><figcaption>Where M Tech began: spinning spare parts</figcaption></figure>
   </div>
 </section>
 
@@ -608,7 +635,7 @@ team = pagehead("Our team", "The family <span class=\"acc\">behind M Tech</span>
 <section class="sec">
   <div class="wrap">
     <div class="ceo">
-      <div class="ceo-img reveal-img"><img src="{{rel}}assets/img/ceo.jpg" alt="Abdul Rasheed Gill" loading="lazy" width="900" height="900"></div>
+      {founder_mark("ceo-img")}
       <div class="ceo-copy">
         <p class="eyebrow">Founder & CEO</p>
         <h2 class="h2">Abdul Rasheed Gill</h2>
@@ -1013,7 +1040,8 @@ def build():
         extra = [crumbs_ld([("Home", "index.html"), (crumb, path)])] if crumb else []
         page(path, t, d, body, ld=graph(webpage(path, kind, t, d), *nodes, *extra), **kw)
 
-    top("index.html", "WebPage", home, nodes=(BUSINESS, WEBSITE), bodycls="home" + (" vidhero" if HAS_HERO_VID else ""))
+    top("index.html", "WebPage", home, nodes=(BUSINESS, WEBSITE), bodycls="home vidhero",
+        extra=f'<link rel="preload" href="{V("js/vendor/three-mt.min.js")}" as="script">\n')
     top("about.html", "AboutPage", about, "About")
     top("services.html", "CollectionPage", services, "Services", nodes=({"@type": "ItemList", "itemListElement": [
         {"@type": "ListItem", "position": i + 1, "name": t, "url": url_of(f"services/{s}.html")} for i, (s, t, _, _) in enumerate(SERVICES)]},))

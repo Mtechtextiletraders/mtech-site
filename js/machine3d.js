@@ -10,7 +10,7 @@
   /* ---------- renderer / scene ---------- */
   const renderer = new THREE.WebGLRenderer({ antialias: !small, alpha: true, powerPreference: 'high-performance' });
   renderer.setPixelRatio(Math.min(devicePixelRatio, small ? 1.25 : 2));
-  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.0;
   renderer.shadowMap.enabled = !small;
@@ -21,20 +21,20 @@
   const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 100);
 
   // soft studio light
-  scene.add(new THREE.HemisphereLight(0xdfe8ff, 0x0a1230, 0.9));
-  const key = new THREE.DirectionalLight(0xffffff, 2.2);
+  scene.add(new THREE.HemisphereLight(0xdfe8ff, 0x0a1230, 2.8));
+  const key = new THREE.DirectionalLight(0xffffff, 6.5);
   key.position.set(6, 12, 8); key.castShadow = true;
   key.shadow.mapSize.set(1024, 1024);
   Object.assign(key.shadow.camera, { left: -8, right: 8, top: 12, bottom: -2, near: 1, far: 40 });
   scene.add(key);
-  const rim = new THREE.DirectionalLight(0x5b7cff, 1.6); rim.position.set(-8, 6, -6); scene.add(rim);
-  const warm = new THREE.PointLight(0xff8a4c, 1.4, 18); warm.position.set(4, 3, 5); scene.add(warm);
+  const rim = new THREE.DirectionalLight(0x5b7cff, 4.8); rim.position.set(-8, 6, -6); scene.add(rim);
+  const warm = new THREE.PointLight(0xff8a4c, 40, 18, 2); warm.position.set(4, 3, 5); scene.add(warm);
 
   /* ---------- materials ---------- */
   const tex = (draw, w = 256, h = 256) => {
     const c = document.createElement('canvas'); c.width = w; c.height = h;
     draw(c.getContext('2d'), w, h);
-    const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; t.anisotropy = 4; return t;
+    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t;
   };
   // wound yarn: fine crossing lines
   const yarnTex = tex((g, w, h) => {
