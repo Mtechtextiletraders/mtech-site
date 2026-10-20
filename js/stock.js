@@ -218,7 +218,7 @@
         x = cx; doc.text('WhatsApp / Call: ', x, cy); x += doc.getTextWidth('WhatsApp / Call: ');
         link('0300-4681423', x, cy, 'https://wa.me/923004681423'); cy += LH;
         link(CEO.email, cx, cy, 'mailto:' + CEO.email);
-        cy += LH; link('ceo.mtechtextiletraders.com', cx, cy, 'https://ceo.mtechtextiletraders.com');
+        cy += LH; link('ceo.mtechtextiletraders.com', cx, cy, 'https://abdulrasheedgill.com');
         doc.setTextColor(...BLUE);
         doc.text(`Page ${n} of ${total}`, W - M, H - 6, { align: 'right' });
       };
