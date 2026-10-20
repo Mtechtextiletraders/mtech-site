@@ -300,7 +300,7 @@ COMPANY
 - Track record: more than 50 mills bought, sold or shifted; more than 100 factory owners advised; work in industrial cities all over Pakistan (Karachi, Hyderabad, Nooriabad, Lahore, Faisalabad, Multan, Sheikhupura, Mirpur and others).
 - Sales are inside Pakistan for now; exports are planned soon.
 - Office: Main Bazar Rasheed Town, Near Post Office, Manga Mandi, Lahore. Godown (warehouse): Darul Ehsan Town, Faisalabad.
-- Website pages: mtechtextiletraders.com (services, machinery stock at mtechtextiletraders.com/stock, team, contact). CEO profile: ceo.mtechtextiletraders.com.
+- Website pages: mtechtextiletraders.com (services, machinery stock at mtechtextiletraders.com/stock, team, contact). CEO profile: abdulrasheedgill.com.
 - Social: Facebook "mtechtextile", Instagram "mtechtextiletrader", LinkedIn "mtechtextiletraders".
 
 SERVICES
