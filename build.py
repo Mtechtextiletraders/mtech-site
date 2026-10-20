@@ -256,12 +256,6 @@ def gear_svg(teeth=24, r=300, depth=34, cls="gear"):
             f'<circle cx="400" cy="400" r="{r-70}" fill="none" stroke="currentColor" stroke-width="2"/>'
             f'<circle cx="400" cy="400" r="60" fill="none" stroke="currentColor" stroke-width="2"/></svg>')
 
-def founder_mark(cls="founder-img"):
-    """Brand plate in place of a portrait (no photos of the founder on this site)."""
-    return (f'<div class="{cls} fmark reveal-img" aria-hidden="true"><div class="fmark-gear">{gear_svg(16, 300, 46, "fg")}</div>'
-            '<img class="fmark-logo" src="{rel}assets/img/logo.png" alt="" width="640" height="333" loading="lazy">'
-            '<span class="fmark-y">1988</span><span class="fmark-t">Founded in Manga Mandi, Lahore</span></div>')
-
 def cta_band(title="Looking for a machine, a part, or a buyer?", text="Tell us what you need. We answer on call and WhatsApp, and godown visits are by appointment."):
     return f'''<section class="cta-band">
   <div class="wrap cta-in">
@@ -456,7 +450,7 @@ home = f'''
 
 <section class="sec founder">
   <div class="wrap founder-in">
-    {founder_mark()}
+    <div class="founder-img reveal-img"><img src="{{rel}}assets/img/ceo.jpg" alt="Abdul Rasheed Gill, Founder and CEO of M Tech Textile Traders" loading="lazy" width="900" height="900"></div>
     <div class="founder-copy">
       <p class="eyebrow">Founder & CEO</p>
       <h2 class="h2 reveal-lines">Abdul Rasheed Gill</h2>
@@ -484,7 +478,7 @@ about = pagehead("About M Tech", "A family business, <span class=\"acc\">built o
       <p>The business started with spare parts. It grew into machinery, then complete mills, and then imports from abroad. Through all of it, the work stayed the same: know the machine, value it honestly, and stand behind the deal.</p>
       <p>Today M Tech is run by Abdul Rasheed Gill and his four sons, from our head office in Manga Mandi, Lahore, and our warehouse in Darul Ehsan Town, Faisalabad.</p>
     </div>
-    <figure class="story-img reveal-img"><img src="{{rel}}assets/img/spare-parts.jpg" alt="Spinning spare parts: rollers, bearings and cots on a workbench" loading="lazy" width="1376" height="768"><figcaption>Where M Tech began: spinning spare parts</figcaption></figure>
+    <figure class="story-img reveal-img"><img src="{{rel}}assets/img/family.jpg" alt="Abdul Rasheed Gill with two of his sons" loading="lazy" width="1400" height="933"><figcaption>Abdul Rasheed Gill with his sons</figcaption></figure>
   </div>
 </section>
 
@@ -635,7 +629,7 @@ team = pagehead("Our team", "The family <span class=\"acc\">behind M Tech</span>
 <section class="sec">
   <div class="wrap">
     <div class="ceo">
-      {founder_mark("ceo-img")}
+      <div class="ceo-img reveal-img"><img src="{{rel}}assets/img/ceo.jpg" alt="Abdul Rasheed Gill" loading="lazy" width="900" height="900"></div>
       <div class="ceo-copy">
         <p class="eyebrow">Founder & CEO</p>
         <h2 class="h2">Abdul Rasheed Gill</h2>
