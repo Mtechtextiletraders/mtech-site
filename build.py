@@ -378,7 +378,7 @@ about = pagehead("About M Tech", "A family business, built on spinning.",
   <div class="wrap split">
     <div class="split-copy rv">
       <h2 class="h2">Our story</h2>
-      <p>Abdul Rasheed Gill began his career in 1988 in the spinning trade, working with open-end and spinning machinery. That same year he founded M Tech Textile Traders.</p>
+      <p>Abdul Rasheed Gill learned the trade on the open-end spinning floors of Karachi. In 1988 he founded M Tech Textile Traders in Karachi, starting with open-end spinning spare parts.</p>
       <p>The business started with spare parts. It grew into machinery, then complete mills, and then imports from abroad. Through all of it, the work stayed the same: know the machine, value it honestly, and stand behind the deal.</p>
       <p>Today M Tech is run by Abdul Rasheed Gill and his four sons, from our head office in Manga Mandi, Lahore, and our warehouse in Darul Ehsan Town, Faisalabad.</p>
     </div>
@@ -404,7 +404,7 @@ about = pagehead("About M Tech", "A family business, built on spinning.",
       <p class="eyebrow">Founder &amp; CEO</p>
       <h2 class="h2">Abdul Rasheed Gill</h2>
       <blockquote>Over three decades in spinning, from spare parts to complete mills.</blockquote>
-      <p>He started in spinning in 1988 and built M Tech from spare parts into machinery, complete mills and imports. Today his four sons work alongside him.</p>
+      <p>He learned spinning in the mills of Karachi, founded M Tech there in 1988, and built it from spare parts into machinery, complete mills and imports. Today his four sons work alongside him.</p>
       <div class="btn-row">
         <a class="btn btn-pri" href="{CEO_SITE}/" target="_blank" rel="noopener"><span>About the CEO</span></a>
         <a class="btn btn-ghost" href="{{rel}}team.html"><span>Meet the team</span></a>
@@ -418,7 +418,7 @@ about = pagehead("About M Tech", "A family business, built on spinning.",
   <div class="wrap">
     <div class="sec-hd rv"><p class="eyebrow">Timeline</p><h2 class="h2">How M Tech grew</h2></div>
     <ol class="tl">
-      <li class="rv"><b>1988</b><h3>The start</h3><p>Abdul Rasheed Gill enters the spinning trade and founds M Tech Textile Traders.</p></li>
+      <li class="rv"><b>1988</b><h3>The start</h3><p>After learning the trade on Karachi's open-end spinning floors, Abdul Rasheed Gill founds M Tech Textile Traders in Karachi.</p></li>
       <li class="rv"><b>Spare parts</b><h3>Parts first</h3><p>The business builds its name supplying spinning spare parts to mills.</p></li>
       <li class="rv"><b>Machinery</b><h3>Machines</h3><p>M Tech moves into buying and selling new and pre-owned textile machinery.</p></li>
       <li class="rv"><b>Mills</b><h3>Complete mills</h3><p>The company begins buying, selling and brokering complete mills, with more than 50 traded.</p></li>
@@ -593,7 +593,7 @@ team = pagehead("Our team", "The family behind M Tech.",
     <div class="ceo-copy rv">
       <p class="eyebrow">Founder &amp; CEO</p>
       <h2 class="h2">Abdul Rasheed Gill</h2>
-      <p>Abdul Rasheed Gill founded M Tech Textile Traders in 1988 after starting out in spinning. He built the company from spare parts into machinery, complete mills and imports, and has advised more than 100 factory owners on machinery value, new mill setup and production.</p>
+      <p>Abdul Rasheed Gill founded M Tech Textile Traders in Karachi in 1988 after learning the trade on its spinning floors. He built the company from spare parts into machinery, complete mills and imports, and has advised more than 100 factory owners on machinery value, new mill setup and production.</p>
       <div class="btn-row">
         <a class="btn btn-pri" href="{CEO_SITE}/" target="_blank" rel="noopener"><span>About the CEO</span></a>
         <a class="btn btn-ghost" href="tel:+923004681423">{ICON["ph"]}<span>0300-4681423</span></a>
@@ -656,6 +656,7 @@ contact = pagehead("Contact", "Talk to us directly.",
       <div class="c-block main">
         <span class="c-lab">M Tech official · Call & WhatsApp</span>
         <a class="c-big" href="tel:{tel(OFFICIAL)}">{OFFICIAL}</a>
+        <p class="c-intl">From outside Pakistan: <a href="tel:{tel(OFFICIAL)}">{"+92 " + tel(OFFICIAL)[3:6] + " " + tel(OFFICIAL)[6:]}</a>. International enquiries are welcome on WhatsApp; we currently sell within Pakistan and export is planned.</p>
         <div class="c-btns">
           <a class="btn btn-wa" href="{wa_link('Assalam o Alaikum M Tech, ')}" target="_blank" rel="noopener">{ICON["wa"]}<span>WhatsApp</span></a>
           <a class="btn btn-ghost" href="tel:{tel(OFFICIAL)}">{ICON["ph"]}<span>Call</span></a>
@@ -1015,7 +1016,8 @@ def build():
          ("Carding parts", ["Cylinder wire", "Doffer wire", "Licker-in wire", "Flat tops", "Card clothing", "Coiler parts"]),
          ("Combing & draw frame parts", ["Circular combs", "Top combs", "Draw frame rollers", "Cans and can springs"]),
          ("Simplex & Autoconer winding parts", ["Flyers", "Roving bobbins", "Autoconer splicer parts", "Winding drums"]),
-         ("General mill parts", ["Bearings", "Gears", "Belts", "Pneumafil and suction parts", "Motors"])])
+         ("General mill parts", ["Bearings", "Gears", "Belts", "Pneumafil and suction parts", "Motors"])],
+        '<div class="callout"><h3>Need a part urgently?</h3><p>Send a photo of the part, or its part number, machine make and model, on WhatsApp. We reply with availability and price.</p><a class="btn btn-wa" href="' + wa_link("Assalam o Alaikum M Tech, I need this spare part (photo / part number): ") + '" target="_blank" rel="noopener">' + ICON["wa"] + '<span>Send part photo on WhatsApp</span></a></div>')
 
     svc_page("yarn-cotton", "Service 03 · Yarn traders", "Cotton yarn and cotton, traded",
         "All kinds of yarn, and cotton both local and imported.",

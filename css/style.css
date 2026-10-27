@@ -558,3 +558,4 @@ body:has(.mtc.open) .fab{opacity:0;pointer-events:none;transform:scale(.8)}
 .svc-intro a,.faq-a a{color:var(--blue);font-weight:600;text-decoration:underline;text-underline-offset:3px}
 
 .sec.svc-top{padding-top:clamp(40px,5vw,64px)}
+.c-intl{margin-top:12px;font-size:15px;color:var(--ink-2,#5b6475);line-height:1.5}.c-intl a{color:inherit;text-decoration:underline}
