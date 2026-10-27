@@ -464,10 +464,18 @@ html.intro::after{content:"";position:fixed;inset:0;background:var(--linen);z-in
 
 /* ---------- responsive ---------- */
 @media (max-width:1100px){
-  .cat-grid{grid-template-columns:repeat(2,1fr)}
-  .tm-grid,.vals,.steps,.pr-grid{grid-template-columns:repeat(2,1fr)}
-  .ts{grid-template-columns:repeat(2,1fr)}
+  .vals,.steps,.pr-grid{grid-template-columns:repeat(2,1fr)}
   .ftr-top{grid-template-columns:1fr 1fr}
+}
+@media (max-width:999px){
+  .cat-grid,.tm-grid{grid-template-columns:repeat(2,1fr)}
+  .ts{grid-template-columns:repeat(2,1fr)}
+}
+/* tablet landscape / small laptop: keep the two-column hero heading from crowding */
+@media (min-width:901px) and (max-width:1199px){
+  .hero-h{font-size:clamp(44px,4.7vw,56px)}
+  .cat-b h3{font-size:clamp(21px,2.1vw,26px)}
+  .tm-b h3{font-size:clamp(21px,2.1vw,25px)}
 }
 @media (max-width:900px){
   :root{--hdr:68px}
@@ -715,3 +723,44 @@ body:has(.mtc.open) .fab{opacity:0;pointer-events:none;transform:scale(.8)}
 .ph-img img,.mem-img img{animation:settle 1.8s var(--ease-o) both}
 @keyframes settle{from{transform:scale(1.07)}to{transform:none}}
 @media (max-width:759px){.svc-intro p:first-child{font-size:20px}.c-block>a.c-mail{font-size:16px}}
+
+/* ---------------------------------------------------------------- responsive pass: tablets, touch, wide */
+/* no single orphan card in two-column card grids */
+.guide-grid>.guide-item:last-child:nth-child(odd){grid-column:1/-1}
+/* tablet portrait (760-900): keep side-by-side layouts instead of one long stacked column */
+@media (min-width:760px) and (max-width:900px){
+  .phead.has-img .phead-card{grid-template-columns:1.1fr .9fr;gap:28px}
+  .phead.has-img .h1{font-size:clamp(36px,5vw,44px)}
+  .ceo,.mem-in{grid-template-columns:.8fr 1.2fr;gap:32px;align-items:start}
+  .ceo{align-items:center}
+  .mem-img{max-width:none}
+  .cat-grid.three{grid-template-columns:repeat(3,1fr);gap:18px}
+  .cat-grid.three .cat-b h3{font-size:22px}
+  .svc-row{grid-template-columns:200px 1fr 50px;gap:24px}
+  .svc-row-img{grid-column:auto}
+  .c-info{display:grid;grid-template-columns:1fr 1fr}
+  .c-info .c-block.main{grid-column:1/-1}
+  .sheet nav,.sheet-ft{width:min(560px,100%);margin-inline:auto}
+}
+/* touch screens (phones and tablets): 44px tap targets, and hover-only effects get a tap equivalent */
+@media (pointer:coarse){
+  .ftr ul a,.more,.c-block>a,.stk-go,.crumbs a,.ftr-bot .credit a,.mtc-cta a,.mtc-x{min-height:44px}
+  .crumbs a,.ftr-bot .credit a{display:inline-flex;align-items:center}
+  .mtc-x{min-width:44px}
+  .mtc-chips button{min-height:40px}
+  .stk-item-t a{padding:8px 0}
+  .fab-tip{display:none}
+}
+@media (hover:none){
+  /* no sticky "hover" lift after a tap; a short press state instead */
+  .pr:hover,.stk-folder:hover,.teaser-list a:hover{transform:none;box-shadow:none}
+  .stk-folder:hover{box-shadow:none;border-color:var(--line)}
+  .cat:hover .cat-img img,.tm:hover .tm-img img,.svc-row:hover .svc-row-img img{--s:1}
+  .stk-folder:hover .stk-folder-img img,.stk-item:hover .stk-item-img img{transform:none}
+  .chips li:hover{background:var(--linen);color:inherit}
+  .cat:active .cat-img img,.tm:active .tm-img img,.svc-row:active .svc-row-img img{--s:1.04}
+  .cat:active h3,.tm:active h3,.svc-row:active h2{color:var(--blue)}
+  .svc-row:active .svc-go{background:var(--ink);color:#fff}
+  .pr:active,.stk-folder:active,.teaser-list a:active{transform:scale(.985)}
+  .btn:active{filter:brightness(.92)}
+}
