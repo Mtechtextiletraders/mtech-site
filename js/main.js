@@ -1,4 +1,4 @@
-/* M Tech Textile Traders: header, menu, form, hero video, stock teaser and the motion layer.
+/* M Tech Textile Traders: header, menu, form, hero video, stock teaser and a soft motion layer.
    All motion is self-playing (viewport enter, time loops, hover/tap). Native scrolling everywhere;
    content is plain HTML and stays visible if this file never runs (see the .js / .rv-safe gates). */
 (() => {
@@ -9,21 +9,16 @@
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
   const yr = document.getElementById('yr'); if (yr) yr.textContent = new Date().getFullYear();
 
-  /* ---------- header: dark top, frosted after scroll, progress, back to top ---------- */
+  /* ---------- header: shrinks and frosts after scroll; back to top ---------- */
   const hdr = document.getElementById('hdr');
   const hero = document.querySelector('.hero');
-  const darkHead = document.querySelector('.phead, .mem');
   const sheet = document.getElementById('sheet'), burger = document.getElementById('burger');
-  const prog = hdr.querySelector('.prog i');
   const totop = document.querySelector('.totop');
   let ticking = false;
   const onScroll = () => {
     ticking = false;
-    const y = scrollY, max = html.scrollHeight - innerHeight;
-    const dark = !!hero || (innerWidth < 760 && !!darkHead);
+    const y = scrollY;
     hdr.classList.toggle('scrolled', y > 30);
-    hdr.classList.toggle('top', dark && y <= 30);
-    if (prog) prog.style.transform = `scaleX(${max > 0 ? Math.min(1, y / max) : 0})`;
     if (totop) totop.classList.toggle('show', y > innerHeight * 1.2);
   };
   addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(onScroll); } }, { passive: true });
@@ -80,19 +75,7 @@
   };
   $$('.hero-h, .h1:not(.stk-h1), .h2').forEach(split);
 
-  /* ---------- helpers: eyebrow decode, counters ---------- */
-  const GL = 'ABCDEFGHJKLMNPRSTUVWXYZ0123456789';
-  const decode = (el) => {
-    if (el.dataset.dec || reduce) return; el.dataset.dec = 1;
-    [...el.childNodes].filter((n) => n.nodeType === 3 && n.textContent.trim()).forEach((n) => {
-      const final = n.textContent; let f = 0;
-      const id = setInterval(() => {
-        f++; const k = f / 13;
-        n.textContent = final.split('').map((c, i) => (/[\s·&,]/.test(c) || i / final.length < k) ? c : GL[(Math.random() * GL.length) | 0]).join('');
-        if (f >= 13) { clearInterval(id); n.textContent = final; }
-      }, 38);
-    });
-  };
+  /* ---------- counters ---------- */
   const count = (el) => {
     if (el.dataset.done) return; el.dataset.done = 1;
     const to = +el.dataset.count, from = +(el.dataset.from || 0), t0 = performance.now(), D = 1600;
@@ -105,19 +88,19 @@
   };
 
   /* ---------- reveal on enter ---------- */
-  ['.svc-img', '.svc-row-img', '.split-img', '.ceo-img', '.ph-img', '.wide-img', '.tm-img', '.mem-img'].forEach((s, n) =>
-    $$(s).forEach((el) => { el.classList.add('wp'); if (n === 2 || n === 3) el.classList.add('wl'); if (n === 5) el.classList.add('wd'); }));
+  $$('.cat-img, .svc-row-img, .split-img, .ceo-img, .wide-img, .tm-img, .offer-img, .cta-img').forEach((el) => el.classList.add('wp'));
+  $$('.split-img, .offer-img, .cta-img, .ceo-img, .wide-img').forEach((el) => el.classList.add('px'));
   $$('.grps').forEach((g) => { g.classList.remove('rv'); $$('.chips li', g).forEach((li, i) => li.style.setProperty('--i', Math.min(i, 24))); });
   const stagger = (els) => {
     const groups = new Map();
     els.forEach((el) => { const p = el.parentElement; const i = groups.get(p) || 0; groups.set(p, i + 1); el.style.setProperty('--d', Math.min(i, 6) * 80 + 'ms'); });
   };
-  const TARGETS = '.rv, [data-split], .wp, .slant, .grow, .draw, .grps, .line, .ftr-mark, [data-count], .eyebrow';
+  const TARGETS = '.rv, [data-split], .wp, .draw, .grps, .line, .ftr-mark, [data-count]';
   const onIn = (el) => {
     el.classList.add('in');
     // cards in a horizontal swipe deck reveal together (the off-screen ones would never "enter")
     if (el.parentElement && el.parentElement.matches('[data-swipe]')) [...el.parentElement.children].forEach((c) => { c.classList.add('in'); $$('.wp', c).forEach((x) => x.classList.add('in')); });
-    if (el.classList.contains('eyebrow')) decode(el);
+    if (el.classList.contains('wp')) setTimeout(() => el.classList.add('settled'), 2000 + (parseInt(el.style.getPropertyValue('--d')) || 0));
     if (el.dataset.count) count(el);
   };
   let io = null;
@@ -141,7 +124,7 @@
 
   /* ---------- home hero: entrance after the intro, background video ---------- */
   if (hero) {
-    const go = () => { hero.classList.add('go'); decode(hero.querySelector('.eyebrow')); };
+    const go = () => hero.classList.add('go');
     if (html.classList.contains('intro')) { addEventListener('mt:introdone', go, { once: true }); setTimeout(go, 5000); }
     else requestAnimationFrame(() => setTimeout(go, 80));
   }
@@ -180,7 +163,6 @@
         tl.hidden = false;
         tl.classList.add('rv-x');
         io ? io.observe(tl) : tl.classList.add('in');
-        tiltOn(tl);
       })
       .catch(() => {});
   }
@@ -190,7 +172,7 @@
     const el = document.getElementById(id); if (!el) return;
     new MutationObserver(() => {
       $$('.stk-folder:not(.rv), .stk-item:not(.rv)', el).forEach((c) => c.classList.add('rv'));
-      watch(el); tiltOn(el);
+      watch(el);
     }).observe(el, { childList: true });
   });
 
@@ -238,101 +220,24 @@
     deck.addEventListener('scroll', () => requestAnimationFrame(upd), { passive: true }); upd();
   });
 
-  /* ---------- particles (drifting cotton fibres) in dark sections ---------- */
-  if (!reduce) $$('.pcl').forEach((cv) => {
-    const ctx = cv.getContext('2d'); if (!ctx) return;
-    const sec = cv.parentElement, N = innerWidth < 760 ? 26 : 56, dpr = Math.min(1.5, devicePixelRatio || 1);
-    let W = 0, H = 0, P = [], on = false, raf = 0;
-    const size = () => { W = sec.clientWidth; H = sec.clientHeight; cv.width = W * dpr; cv.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); };
-    const mk = (y) => ({ x: Math.random() * W, y: y ?? Math.random() * H, r: Math.random() * 1.8 + .6, v: Math.random() * .35 + .12, a: Math.random() * .45 + .12, s: Math.random() * 6.28, o: Math.random() < .2 });
-    const tick = () => {
-      ctx.clearRect(0, 0, W, H);
-      P.forEach((p) => {
-        p.y -= p.v; p.s += .012; p.x += Math.sin(p.s) * .25;
-        if (p.y < -10) Object.assign(p, mk(H + 10));
-        ctx.globalAlpha = p.a; ctx.fillStyle = p.o ? '#FF8A4C' : '#ffffff';
-        ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 6.283); ctx.fill();
+  /* ---------- gentle photo parallax on wide screens (transform only, small) ---------- */
+  const pxEls = $$('.px');
+  if (pxEls.length && !reduce && IO) {
+    const wide = matchMedia('(min-width: 760px)');
+    const live = new Set();
+    let raf = 0;
+    const upd = () => {
+      raf = 0;
+      if (!wide.matches) return;
+      live.forEach((el) => {
+        const r = el.getBoundingClientRect();
+        const k = (r.top + r.height / 2 - innerHeight / 2) / innerHeight; // about -1..1
+        el.style.setProperty('--py', (Math.max(-1, Math.min(1, k)) * -18).toFixed(1) + 'px');
       });
-      if (on) raf = requestAnimationFrame(tick);
     };
-    const init = () => { size(); P = Array.from({ length: N }, () => mk()); };
-    init(); addEventListener('resize', () => { size(); }, { passive: true });
-    if (IO) new IntersectionObserver(([e]) => { on = e.isIntersecting && !document.hidden; cancelAnimationFrame(raf); if (on) raf = requestAnimationFrame(tick); }).observe(sec);
-    document.addEventListener('visibilitychange', () => { if (document.hidden) { on = false; cancelAnimationFrame(raf); } });
-  });
-
-  /* ---------- buttons: ripple on tap, magnetic on desktop ---------- */
-  document.addEventListener('pointerdown', (e) => {
-    const b = e.target.closest('.btn'); if (!b || reduce) return;
-    const r = b.getBoundingClientRect(), d = Math.max(r.width, r.height) * 2.2, s = document.createElement('span');
-    s.className = 'rip'; s.style.cssText = `width:${d}px;height:${d}px;left:${e.clientX - r.left - d / 2}px;top:${e.clientY - r.top - d / 2}px`;
-    b.appendChild(s); setTimeout(() => s.remove(), 650);
-  });
-  function tiltOn(root) {
-    if (!fine || reduce) return;
-    $$('.svc-card, .tm, .stk-folder, .stk-item, .guide-item, .val, .trust-i, .teaser-list a', root).forEach((c) => {
-      if (c.dataset.tilt) return; c.dataset.tilt = 1; c.classList.add('tilt');
-      let raf = 0;
-      c.addEventListener('pointermove', (e) => {
-        const r = c.getBoundingClientRect(), px = (e.clientX - r.left) / r.width, py = (e.clientY - r.top) / r.height;
-        cancelAnimationFrame(raf); raf = requestAnimationFrame(() => {
-          c.style.transform = `perspective(900px) rotateX(${(.5 - py) * 7}deg) rotateY(${(px - .5) * 7}deg) translateY(-6px)`;
-          c.style.setProperty('--mx', px * 100 + '%'); c.style.setProperty('--my', py * 100 + '%');
-        });
-      });
-      c.addEventListener('pointerenter', () => { c.style.transition = 'transform .15s ease-out, box-shadow .5s, border-color .3s'; });
-      c.addEventListener('pointerleave', () => { cancelAnimationFrame(raf); c.style.transition = 'transform .6s cubic-bezier(.2,.8,.2,1), box-shadow .5s, border-color .3s'; c.style.transform = ''; });
-    });
-  }
-  tiltOn(document);
-  if (fine && !reduce) {
-    $$('.btn, .social a, .svc-go, .totop').forEach((b) => {
-      b.addEventListener('pointermove', (e) => { const r = b.getBoundingClientRect(); b.style.transform = `translate(${(e.clientX - r.left - r.width / 2) * .18}px, ${(e.clientY - r.top - r.height / 2) * .28}px)`; });
-      b.addEventListener('pointerleave', () => { b.style.transform = ''; });
-    });
-    /* custom cursor ring with labels */
-    const c = document.createElement('div'); c.className = 'cur'; c.setAttribute('aria-hidden', 'true'); c.innerHTML = '<span></span>';
-    document.body.appendChild(c);
-    const txt = c.querySelector('span');
-    let tx = 0, ty = 0, cx = 0, cy = 0, run = false;
-    const loop = () => { cx += (tx - cx) * .22; cy += (ty - cy) * .22; c.style.transform = `translate(${cx}px, ${cy}px)`; if (Math.abs(tx - cx) + Math.abs(ty - cy) > .3) requestAnimationFrame(loop); else run = false; };
-    const lab = (el) => {
-      if (el.closest('.btn-wa, .fab, .mtc-wa')) return 'Chat';
-      if (el.closest('a[href^="tel:"]')) return 'Call';
-      if (el.closest('.svc-card, .svc-row, .tm, .stk-folder, .stk-item-img, .stk-main, .teaser-list a')) return 'View';
-      if (el.closest('.rail-track')) return 'Drag';
-      if (el.closest('.btn-pri')) return 'Open';
-      return '';
-    };
-    addEventListener('pointermove', (e) => {
-      tx = e.clientX; ty = e.clientY; c.classList.add('on'); if (!run) { run = true; requestAnimationFrame(loop); }
-      const t = e.target; if (!(t instanceof Element)) return;
-      const l = lab(t);
-      c.classList.toggle('big', !!l); if (l) txt.textContent = l;
-      c.classList.toggle('dark', !!t.closest('.hero, .line, .ftr, .cta-band, .brands, .stats, .callout, .c-block.main'));
-      c.classList.toggle('txt', !l && !!t.closest('input, textarea, select, .mtc-panel'));
-    }, { passive: true });
-    document.addEventListener('pointerleave', () => c.classList.remove('on'));
-    addEventListener('blur', () => c.classList.remove('on'));
-  }
-
-  /* ---------- quick page transition (never blocks: plain navigation underneath) ---------- */
-  if (!reduce) {
-    let pt = null;
-    document.addEventListener('click', (e) => {
-      const a = e.target.closest('a[href]');
-      if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-      if (a.target && a.target !== '_self') return;
-      if (a.hasAttribute('download')) return;
-      const u = new URL(a.href, location.href);
-      if (u.origin !== location.origin || /^\/(api|mtech-panel)/.test(u.pathname)) return;
-      if (u.pathname === location.pathname && u.search === location.search) return;
-      e.preventDefault();
-      if (!pt) { pt = document.createElement('div'); pt.className = 'pt'; pt.setAttribute('aria-hidden', 'true'); const logo = document.querySelector('.brand img'); pt.innerHTML = logo ? `<img src="${logo.getAttribute('src')}" alt="">` : ''; document.body.appendChild(pt); }
-      void pt.offsetWidth; pt.classList.add('go');
-      try { sessionStorage.setItem('mt_pt', '1'); } catch (er) {}
-      setTimeout(() => { location.href = u.href; }, 300);
-    });
-    addEventListener('pageshow', (e) => { if (e.persisted && pt) pt.classList.remove('go'); html.classList.remove('pt-in'); });
+    const pio = new IntersectionObserver((en) => { en.forEach((x) => (x.isIntersecting ? live.add(x.target) : live.delete(x.target))); if (!raf) raf = requestAnimationFrame(upd); }, { rootMargin: '10% 0px' });
+    pxEls.forEach((el) => pio.observe(el));
+    addEventListener('scroll', () => { if (!raf && live.size) raf = requestAnimationFrame(upd); }, { passive: true });
+    wide.addEventListener('change', () => { if (!wide.matches) pxEls.forEach((el) => el.style.removeProperty('--py')); });
   }
 })();
