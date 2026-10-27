@@ -47,29 +47,29 @@ def logo_svg(cls="", ids=False):
             '<img id="lgM" src="{rel}assets/img/lg-m.png" alt="" width="1500" height="780"></div>')
 
 SERVICES = [
-    ("machinery", "Textile Machinery", "New & pre-owned machinery, bought and sold", "ring-hall.jpg"),
-    ("spare-parts", "Spinning Spare Parts", "Every part a spinning line runs on", "spare-parts.jpg"),
-    ("yarn-cotton", "Yarn & Cotton Trade", "All kinds of yarn; local and imported cotton", "yarn-cones.jpg"),
-    ("mill-sale-purchase", "Mill Sale & Purchase", "Complete mills, deals and advisory", "mill-exterior.jpg"),
+    ("machinery", "Textile Machinery", "New and pre-owned machinery, bought and sold.", "ring-hall"),
+    ("spare-parts", "Spinning Spare Parts", "Every part a spinning line runs on.", "spare-parts"),
+    ("yarn-cotton", "Yarn & Cotton Trade", "All kinds of yarn. Local and imported cotton.", "yarn-cones"),
+    ("mill-sale-purchase", "Mill Sale & Purchase", "Complete mills, deals and honest advice.", "mill-exterior"),
 ]
 
 TEAM = [
-    dict(slug="soban-rasheed", name="Soban Rasheed", role="Inventory Manager", img="team-soban.jpg", phone="0322-4562220",
+    dict(slug="soban-rasheed", name="Soban Rasheed", role="Inventory Manager", img="team-soban", phone="0322-4562220",
          short="Runs the godown: stock, machinery in and out, and every purchase and sale on the floor.",
          bio=["Soban looks after M Tech's inventory. Every machine and spare part that comes into the godown, and every one that leaves, passes through him.",
               "He keeps stock records current, checks condition when machinery arrives, and handles the buying and selling of machinery from the warehouse side, so a client asking “do you have it?” gets a straight answer the same day."],
          duties=["Godown stock and records", "Machinery purchase and sale", "Condition checks on incoming machinery", "Dispatch and loading"]),
-    dict(slug="sufian-rasheed", name="Sufian Rasheed", role="Office Manager", img="team-sufian.jpg", phone="0309-9352267",
+    dict(slug="sufian-rasheed", name="Sufian Rasheed", role="Office Manager", img="team-sufian", phone="0309-9352267",
          short="Runs the office: marketing, accounts and the day-to-day paperwork behind every deal.",
          bio=["Sufian manages the M Tech office. He handles marketing, accounts and the paperwork that keeps every deal clean, from quotations and invoices to payments and records.",
               "He also looks after M Tech's online presence, so when a client finds us on the web or social media, the conversation starts with him."],
          duties=["Marketing and online presence", "Accounts and payments", "Quotations, invoices and records", "Client coordination"]),
-    dict(slug="numan-rasheed", name="Numan Rasheed", role="Business Development", img="team-numan.jpg", phone="0304-4562220",
+    dict(slug="numan-rasheed", name="Numan Rasheed", role="Business Development", img="team-numan", phone="0304-4562220",
          short="Visits factories, meets owners and turns their needs into the right machinery deal.",
          bio=["Numan works on business development. He visits mills and factories across Pakistan, meets owners and managers, and listens to what their production actually needs.",
               "From those visits come suggestions on machinery, upgrades and spare parts, and the meetings where deals are agreed."],
          duties=["Factory and mill visits", "Client meetings", "Machinery and upgrade suggestions", "New business"]),
-    dict(slug="moeen-rasheed", name="Moeen Rasheed", role="Business Development", img="team-moeen.jpg", phone="0323-4562220",
+    dict(slug="moeen-rasheed", name="Moeen Rasheed", role="Business Development", img="team-moeen", phone="0323-4562220",
          short="On the road with clients: factory visits, meetings and practical advice.",
          bio=["Moeen also leads business development. He spends his time at client sites, seeing machinery in use, understanding how a unit runs and where it can improve.",
               "His visits shape the advice M Tech gives on buying, selling and upgrading machinery, and he follows each deal through meetings to a close."],
@@ -113,7 +113,7 @@ def head(title, desc, rel, path, extra="", ld=None, noindex=False):
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{html.escape(title)}</title>
 <meta name="description" content="{html.escape(desc)}">
-{robots}{canon_tag}<meta name="theme-color" content="#0033F8">
+{robots}{canon_tag}<meta name="theme-color" content="#ffffff">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="M Tech Textile Traders">
 <meta property="og:locale" content="en_PK">
@@ -131,19 +131,18 @@ def head(title, desc, rel, path, extra="", ld=None, noindex=False):
 <link rel="icon" href="{rel}assets/img/favicon.png" type="image/png" sizes="64x64">
 <link rel="icon" href="{rel}assets/img/icon-192.png" type="image/png" sizes="192x192">
 <link rel="apple-touch-icon" href="{rel}assets/img/apple-touch-icon.png">
-<link rel="preload" href="{rel}assets/fonts/archivo-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="{rel}assets/fonts/hanken-grotesk-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="{rel}{V('css/style.css')}">
-{ld_tag}<script>try{{var d=document.documentElement;if(sessionStorage.getItem("pt")){{d.classList.add("pt-in");setTimeout(function(){{d.classList.remove("pt-in")}},2500)}}else if(!sessionStorage.getItem("ld")&&!matchMedia("(prefers-reduced-motion: reduce)").matches){{sessionStorage.setItem("ld","1");d.classList.add("ld");setTimeout(function(){{d.classList.remove("ld")}},3200)}}}}catch(e){{}}</script>
-{extra}</head>
+<link rel="preload" href="{rel}assets/fonts/hanken-grotesk-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin>
+{extra}<link rel="stylesheet" href="{rel}{V('css/style.css')}">
+{ld_tag}</head>
 '''
 
-def header(rel, active):
+def header(rel, active, on_dark=False):
     links = "".join(
         f'<a href="{rel}{h}"{" aria-current=\"page\"" if active == h else ""}>{t}</a>' for h, t in NAV)
     sheet = "".join(f'<a href="{rel}{h}">{t}</a>' for h, t in NAV)
-    return f'''<a class="skip" href="#main">Skip to content</a>
-<header class="hdr" id="hdr">
+    return f"""<a class="skip" href="#main">Skip to content</a>
+<header class="hdr{' top' if on_dark else ''}" id="hdr">
   <div class="wrap hdr-in">
     <a class="brand" href="{rel}index.html" aria-label="M Tech Textile Traders home">
       <img src="{rel}assets/img/logo.png" alt="" width="62" height="32">
@@ -151,7 +150,7 @@ def header(rel, active):
     </a>
     <nav class="nav" aria-label="Main">{links}</nav>
     <a class="btn btn-wa hdr-cta" href="{wa_link('Assalam o Alaikum M Tech, I want to ask about ')}" target="_blank" rel="noopener">{ICON["wa"]}<span>WhatsApp</span></a>
-    <button class="burger" id="burger" aria-expanded="false" aria-controls="sheet" aria-label="Open menu"><span></span><span></span></button>
+    <button class="burger" id="burger" type="button" aria-expanded="false" aria-controls="sheet" aria-label="Open menu"><span></span><span></span></button>
   </div>
   <div class="sheet" id="sheet" aria-hidden="true">
     <nav aria-label="Mobile">{sheet}</nav>
@@ -161,21 +160,20 @@ def header(rel, active):
     </div>
   </div>
 </header>
-'''
+"""
 
 def footer(rel):
     svc = "".join(f'<li><a href="{rel}services/{s}.html">{t}</a></li>' for s, t, _, _ in SERVICES)
-    return f'''<footer class="ftr">
+    return f"""<footer class="ftr">
   <div class="wrap ftr-top">
     <div class="ftr-brand">
-      <img src="{rel}assets/img/logo.png" alt="M Tech" width="92" height="48">
-      <p class="ftr-line">We specialize in buying and selling all types of new and pre-owned textile machinery.</p>
+      <img src="{rel}assets/img/logo.png" alt="M Tech" width="80" height="42" loading="lazy">
+      <p class="ftr-line">We buy and sell new and pre-owned textile machinery, spinning spare parts, yarn, cotton and complete mills.</p>
       <p class="ftr-small">Serving Pakistan's textile industry since 1988. Member of the Chamber of Commerce.</p>
       <div class="social">
         <a href="{FB}" target="_blank" rel="noopener" aria-label="Facebook">{ICON["fb"]}</a>
         <a href="{IG}" target="_blank" rel="noopener" aria-label="Instagram">{ICON["ig"]}</a>
         <a href="{LI}" target="_blank" rel="noopener" aria-label="LinkedIn">{ICON["li"]}</a>
-        <a href="{wa_link()}" target="_blank" rel="noopener" aria-label="WhatsApp">{ICON["wa"]}</a>
       </div>
     </div>
     <div><h2 class="ftr-h">Services</h2><ul>{svc}</ul></div>
@@ -191,32 +189,29 @@ def footer(rel):
       <li>{ICON["pin"]}<span>Office: {OFFICE}</span></li>
       <li>{ICON["pin"]}<span>Warehouse: {WAREHOUSE}</span></li></ul></div>
   </div>
-  <div class="ftr-mark" aria-hidden="true"><div class="ftr-mark-in">{"".join(f'<span>{c}</span>' if c != " " else '<span class="sp"> </span>' for c in "M TECH")}</div></div>
   <div class="wrap ftr-bot">
     <span>© <span id="yr">2026</span> M Tech Textile Traders. All rights reserved.</span>
     <span class="credit">Designed by <a href="https://navifexpro.com" target="_blank" rel="noopener">navifexpro.com</a></span>
   </div>
 </footer>
 <a class="fab" href="https://wa.me/923004681423?text={quote('Assalam o Alaikum Rasheed Sb, main M Tech ki website se raabta kar raha hoon. ')}" target="_blank" rel="noopener" aria-label="WhatsApp Rasheed Sb">{ICON["wa"]}<span class="fab-tip">Rasheed Sb ko WhatsApp</span></a>
-<nav class="mbar" aria-label="Quick contact"><a class="mbar-call" href="tel:{tel(OFFICIAL)}">{ICON["ph"]}<span>Call</span></a><a class="mbar-wa" href="{wa_link('Assalam o Alaikum M Tech, I want to ask about ')}" target="_blank" rel="noopener">{ICON["wa"]}<span>WhatsApp</span></a></nav>
-<script src="{rel}js/vendor/gsap.min.js" defer></script>
-<script src="{rel}js/vendor/ScrollTrigger.min.js" defer></script>
-<script src="{rel}js/vendor/lenis.min.js" defer></script>
 <script src="{rel}{V('js/main.js')}" defer></script>
-<script src="{rel}{V('js/motion.js')}" defer></script>
 <script src="{rel}{V('js/chat.js')}" defer></script>
 </body>
 </html>
-'''
+"""
 
-def page(path, title, desc, body, active=None, bodycls="", rel=None, extra="", scripts="", sitemap=True, ld=None, noindex=False):
+def page(path, title, desc, body, active=None, bodycls="", rel=None, extra="", scripts="", sitemap=True, ld=None, noindex=False, body_start=""):
     depth = path.count("/")
     rel = "../" * depth if rel is None else rel
     body = body.replace("{rel}", rel)
     ft = footer(rel)
     if scripts:
         ft = ft.replace("</body>", scripts.replace("{rel}", rel) + "\n</body>")
-    out = head(title, desc, rel, path, extra, ld, noindex) + f'<body class="{bodycls}">\n' + header(rel, active or path) + f'<main id="main">\n{body}\n</main>\n' + ft
+    on_dark = "home" in bodycls.split()
+    cls = f' class="{bodycls}"' if bodycls else ""
+    out = (head(title, desc, rel, path, extra.replace("{rel}", rel), ld, noindex) + f'<body{cls}>\n' + body_start.replace("{rel}", rel)
+           + header(rel, active or path, on_dark) + f'<main id="main">\n{body}\n</main>\n' + ft)
     out = clean_links(out, rel)
     full = os.path.join(ROOT, path)
     os.makedirs(os.path.dirname(full), exist_ok=True)
@@ -226,71 +221,53 @@ def page(path, title, desc, body, active=None, bodycls="", rel=None, extra="", s
 
 PAGES = []
 
+def img_tag(name, alt, w, h, lazy=True, sizes=None, cls="", prio=False):
+    """WebP image with width/height; large photos get an 800px variant for phones."""
+    small = os.path.exists(os.path.join(ROOT, "assets/img", name + "-800.webp"))
+    srcset = f' srcset="{{rel}}assets/img/{name}-800.webp 800w, {{rel}}assets/img/{name}.webp {w}w" sizes="{sizes or "100vw"}"' if small else ""
+    load = ' fetchpriority="high"' if prio else (' loading="lazy" decoding="async"' if lazy else "")
+    c = f' class="{cls}"' if cls else ""
+    return f'<img{c} src="{{rel}}assets/img/{name}.webp"{srcset} alt="{alt}" width="{w}" height="{h}"{load}>'
+
 def pagehead(eyebrow, title, lead, crumbs=None, img=None):
     cr = ""
     if crumbs:
-        cr = '<nav class="crumbs" aria-label="Breadcrumb">' + ' <span>/</span> '.join(
+        cr = '<nav class="crumbs" aria-label="Breadcrumb">' + ' <span aria-hidden="true">/</span> '.join(
             f'<a href="{{rel}}{h}">{t}</a>' if h else f'<span aria-current="page">{t}</span>' for h, t in crumbs) + '</nav>'
-    im = f'<div class="ph-img" data-parallax><img src="{{rel}}assets/img/{img}" alt="" width="1376" height="768" fetchpriority="high"></div>' if img else ""
-    return f'''<section class="phead{' has-img' if img else ''}">
-  <div class="gear-bg" aria-hidden="true">{gear_svg()}</div>
+    im = ""
+    if img:
+        name, alt = img
+        w, h = IMG_SIZE[name]
+        im = f'<div class="ph-img">{img_tag(name, alt, w, h, lazy=False, sizes="(max-width: 1240px) 100vw, 1180px", prio=True)}</div>'
+    return f"""<section class="phead{'' if img else ' no-img'}">
   <div class="wrap phead-in">
     {cr}
     <p class="eyebrow">{eyebrow}</p>
-    <h1 class="h1 reveal-lines">{title}</h1>
+    <h1 class="h1">{title}</h1>
     <p class="lead">{lead}</p>
   </div>
   {im}
-</section>'''
+</section>"""
 
-def gear_svg(teeth=24, r=300, depth=34, cls="gear"):
-    import math
-    pts = []
-    n = teeth * 4
-    for i in range(n):
-        a = 2 * math.pi * i / n
-        k = i % 4
-        rr = r + (depth if k in (1, 2) else 0)
-        pts.append(f"{400 + rr * math.cos(a):.1f},{400 + rr * math.sin(a):.1f}")
-    return (f'<svg class="{cls}" viewBox="0 0 800 800"><polygon points="{" ".join(pts)}" fill="none" stroke="currentColor" stroke-width="2"/>'
-            f'<circle cx="400" cy="400" r="{r-70}" fill="none" stroke="currentColor" stroke-width="2"/>'
-            f'<circle cx="400" cy="400" r="60" fill="none" stroke="currentColor" stroke-width="2"/></svg>')
+IMG_SIZE = {"ceo": (900, 900), "cotton-bales": (1376, 768), "family": (1400, 933), "mill-exterior": (1376, 768),
+            "ring-hall": (1376, 768), "spare-parts": (1376, 768), "yarn-cones": (1376, 768),
+            "team-moeen": (720, 964), "team-numan": (720, 960), "team-soban": (720, 964), "team-sufian": (720, 964)}
+IMG_ALT = {"ring-hall": "Ring spinning frames in a mill hall", "spare-parts": "Spinning machine spare parts",
+           "yarn-cones": "Cones of cotton yarn", "mill-exterior": "Exterior of a spinning mill",
+           "cotton-bales": "Cotton bales in a warehouse", "family": "Abdul Rasheed Gill with two of his sons"}
 
 def cta_band(title="Looking for a machine, a part, or a buyer?", text="Tell us what you need. We answer on call and WhatsApp, and godown visits are by appointment."):
-    return f'''<section class="cta-band">
+    return f"""<section class="cta-band">
   <div class="wrap cta-in">
-    <div><h2 class="h2">{title}</h2><p>{text}</p></div>
+    <h2 class="h2">{title}</h2><p>{text}</p>
     <div class="cta-btns">
       <a class="btn btn-wa btn-lg" href="{wa_link('Assalam o Alaikum M Tech, I want to ask about ')}" target="_blank" rel="noopener">{ICON["wa"]}<span>WhatsApp {OFFICIAL}</span></a>
       <a class="btn btn-ghost-w btn-lg" href="tel:{tel(OFFICIAL)}">{ICON["ph"]}<span>Call now</span></a>
     </div>
   </div>
-</section>'''
+</section>"""
 
 # ---------------------------------------------------------------- HOME
-brand_row = lambda items: "".join(f'<span class="bm">{b}</span><i aria-hidden="true">·</i>' for b in items)
-def _a(body):
-    return f'<svg viewBox="0 0 220 150" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">{body}</svg>'
-
-JOURNEY = [
-    ("Blowroom", "Bales are opened, cleaned and blended into an even flow of cotton.",
-     _a('<rect x="14" y="70" width="46" height="56" rx="4"/><path d="M14 88h46M14 106h46"/><path d="M60 98h22"/><rect x="82" y="52" width="70" height="74" rx="6"/><circle cx="104" cy="88" r="16"/><circle cx="132" cy="88" r="10"/><path d="M152 70h22l18-18h18M174 70v56h-22"/><path d="M96 88h16M104 80v16"/><path d="M8 126h204"/>')),
-    ("Carding", "Fibres are separated one by one and condensed into a soft sliver.",
-     _a('<circle cx="96" cy="78" r="44"/><circle cx="96" cy="78" r="8"/><circle cx="40" cy="104" r="14"/><circle cx="156" cy="104" r="18"/><path d="M58 40c20-14 56-14 76 0"/><path d="M174 104h18v22"/><path d="M8 126h204M64 122h64"/><path d="M96 34v-10M140 78h10M52 78H42"/>')),
-    ("Draw frame", "Six to eight slivers are doubled and drafted for evenness.",
-     _a('<rect x="18" y="80" width="26" height="46" rx="3"/><rect x="50" y="80" width="26" height="46" rx="3"/><rect x="82" y="80" width="26" height="46" rx="3"/><path d="M31 80c0-30 60-40 90-40M63 80c0-24 40-34 58-36M95 80c0-14 16-22 26-24"/><rect x="120" y="30" width="54" height="26" rx="5"/><circle cx="134" cy="43" r="5"/><circle cx="160" cy="43" r="5"/><path d="M174 43h12v40"/><rect x="172" y="84" width="30" height="42" rx="3"/><path d="M8 126h204"/>')),
-    ("Comber", "Short fibres and neps are taken out for fine, strong counts.",
-     _a('<rect x="20" y="40" width="180" height="60" rx="8"/><circle cx="56" cy="70" r="16"/><circle cx="110" cy="70" r="16"/><circle cx="164" cy="70" r="16"/><path d="M48 62l16 16M102 62l16 16M156 62l16 16"/><path d="M40 100v26M180 100v26M8 126h204"/><path d="M56 54v-8M110 54v-8M164 54v-8"/>')),
-    ("Simplex", "Sliver is drafted into roving and given its first light twist.",
-     _a('<path d="M20 40h180M20 126h180"/>' + ''.join(f'<path d="M{34+i*30} 52l-8 20h16z"/><rect x="{27+i*30}" y="72" width="14" height="40" rx="5"/><path d="M{34+i*30} 40v12"/>' for i in range(6)))),
-    ("Ring frame", "The final draft and twist. Here the roving becomes yarn.",
-     _a('<path d="M14 34h192M14 60h192M14 126h192"/>' + ''.join(f'<circle cx="{26+i*24}" cy="47" r="7"/><path d="M{26+i*24} 60v8"/><path d="M{20+i*24} 108c0-24 4-38 6-40 2 2 6 16 6 40z"/><path d="M{26+i*24} 108v14"/>' for i in range(8)))),
-    ("Autoconer", "Yarn is cleared, spliced and wound onto export-ready cones.",
-     _a('<rect x="22" y="22" width="20" height="104" rx="3"/><rect x="178" y="22" width="20" height="104" rx="3"/><path d="M58 42l50-10v52l-50-10z"/><path d="M108 32h40v52h-40"/><circle cx="128" cy="98" r="12"/><path d="M128 110v6M110 98H50M60 112v14h-8"/><rect x="146" y="20" width="26" height="18" rx="3"/><path d="M8 126h204"/>')),
-    ("Open-end", "Rotor spinning straight from sliver, for coarser counts at speed.",
-     _a('<rect x="24" y="30" width="172" height="96" rx="8"/><circle cx="80" cy="78" r="26"/><circle cx="80" cy="78" r="10"/><path d="M80 52V30M120 50h56v56h-56z"/><path d="M134 78h28M148 64v28"/><path d="M8 126h204"/>')),
-]
-
 PROCESS = [
     ("Blowroom", "Bales", "Clean tufts", "Compressed bales are opened, the cotton is plucked into small tufts, cleaned of trash and blended so every kilo runs the same.", "Trützschler · Rieter blowroom lines"),
     ("Carding", "Tufts", "Card sliver", "The card separates the fibres one by one into a fine web, then gathers that web into a soft rope called sliver.", "Trützschler TC · Rieter C series"),
@@ -302,244 +279,226 @@ PROCESS = [
     ("Open-end", "Sliver", "Yarn", "Rotor spinning skips the simplex and ring frame and makes coarser yarn straight from sliver, at high speed.", "Rieter R · Schlafhorst Autocoro"),
 ]
 
-LINE = [("Blowroom", "Opening & cleaning"), ("Carding", "Card & web"), ("Draw frame", "Drafting"), ("Comber", "Lap & combing"),
-        ("Simplex", "Roving"), ("Ring frame", "Spinning"), ("Autoconer", "Winding"), ("Open-end", "Rotor spinning")]
 
-home = f'''
-<section class="cine" id="top" aria-label="M Tech Textile Traders, since 1988" data-three="{{rel}}{V('js/vendor/three-mt.min.js')}" data-cine="{{rel}}{V('js/cine.js')}">
-  <div class="cine-pin">
-    <div class="cine-stage" aria-hidden="true">
-      <div class="cine-fb"><img src="{{rel}}assets/video/hero.jpg" alt="" width="1600" height="900" fetchpriority="high"><div class="hero-veil"></div><div class="hero-logo">{logo_svg("hl", ids=True)}</div></div>
-      <div class="cine-gl"></div>
-      <svg class="cine-svg"></svg>
-      <div class="cine-labs"></div>
-      <div class="cine-grain"></div>
-    </div>
-    <div class="wrap cine-in">
-      <article class="cine-ch on" data-ch="0">
-        <p class="eyebrow"><span class="dot"></span> Lahore · Faisalabad · Since 1988</p>
-        <h1 class="hero-h">
-          <span class="ln"><span>Textile machinery,</span></span>
-          <span class="ln"><span>bought and sold</span></span>
-          <span class="ln"><span class="acc">the right way.</span></span>
-        </h1>
-        <p class="hero-sub">We specialize in buying and selling all types of new and pre-owned textile machinery. Spinning is our core, with spare parts, yarn and cotton, and complete mills alongside it.</p>
-        <ul class="hero-chips" aria-label="M Tech in numbers"><li><b>1988</b> Founded</li><li><b>50+</b> Mills traded</li><li><b>100+</b> Owners advised</li></ul>
-        <div class="hero-btns">
-          <a class="btn btn-pri btn-lg" href="{{rel}}services.html"><span>Our services</span>{ICON["arr"]}</a>
-          <a class="btn btn-wa btn-lg" href="{wa_link('Assalam o Alaikum M Tech, I want to ask about ')}" target="_blank" rel="noopener">{ICON["wa"]}<span>WhatsApp</span></a>
-        </div>
-      </article>
-      <article class="cine-ch" data-ch="1">
-        <p class="cine-num"><b>02</b><span>In motion</span></p>
-        <h2 class="cine-h">Gears, spindles and cones that still turn true.</h2>
-        <p class="cine-p">We check the parts that keep a spinning line turning before a machine changes hands, and tell you honestly what it is worth.</p>
-      </article>
-      <article class="cine-ch" data-ch="2">
-        <p class="cine-num"><b>03</b><span>Inside the unit</span></p>
-        <h2 class="cine-h">From blowroom to cone, we know every part.</h2>
-        <p class="cine-p">Ring frames, Autocoro and open-end rotor machines, Autoconers, blowroom and drawing. New and pre-owned, with the spare parts to keep them running.</p>
-      </article>
-      <article class="cine-ch" data-ch="3">
-        <p class="cine-num"><b>04</b><span>Since 1988</span></p>
-        <h2 class="cine-h">A machine, a part or a buyer? Ask us.</h2>
-        <p class="cine-year"><b data-y>2026</b><span>In the spinning trade since 1988, from Manga Mandi, Lahore.</span></p>
-        <div class="hero-btns">
-          <a class="btn btn-wa btn-lg" href="{wa_link('Assalam o Alaikum M Tech, I want to ask about ')}" target="_blank" rel="noopener">{ICON["wa"]}<span>WhatsApp {OFFICIAL}</span></a>
-          <a class="btn btn-ghost-w btn-lg" href="tel:{tel(OFFICIAL)}">{ICON["ph"]}<span>Call now</span></a>
-        </div>
-      </article>
-    </div>
-    <ol class="cine-rail" aria-hidden="true"><li class="on"><i>01</i><span>Reveal</span></li><li><i>02</i><span>In motion</span></li><li><i>03</i><span>Inside the unit</span></li><li><i>04</i><span>Since 1988</span></li></ol>
-    <div class="cine-bar" aria-hidden="true"><i></i></div>
-    <div class="scroll-cue" aria-hidden="true"><span></span></div>
-  </div>
-</section>
-
-<section class="brands" aria-label="Machinery makes we deal in">
-  <p class="brands-t">Makes we buy, sell and source parts for</p>
-  <div class="marq"><div class="marq-tr">{brand_row(BRANDS[:10])}{brand_row(BRANDS[:10])}</div></div>
-  <div class="marq rev"><div class="marq-tr">{brand_row(BRANDS[10:])}{brand_row(BRANDS[10:])}</div></div>
-  <p class="brands-note">Brand names belong to their owners. M Tech trades new and pre-owned machinery of these makes; we are not their official agent.</p>
-</section>
-
-<section class="stats">
-  <div class="wrap stats-in">
-    <div class="stat"><b data-count="1988" data-plain>1988</b><span>Serving the industry since</span></div>
-    <div class="stat"><b><span data-count="50">50</span>+</b><span>Mills bought and sold</span></div>
-    <div class="stat"><b><span data-count="100">100</span>+</b><span>Factory owners we advise</span></div>
-    <div class="stat"><b>All</b><span>Industrial cities of Pakistan</span></div>
-  </div>
-</section>
-
-<section class="sec svc-sec">
+LINE_HTML = """<section class="sec alt">
   <div class="wrap">
-    <div class="sec-hd">
+    <div class="sec-hd rv">
+      <p class="eyebrow">How cotton becomes yarn</p>
+      <h2 class="h2">From the first bale to the final cone.</h2>
+      <p class="sec-sub">The departments of a spinning mill, in order, and the makes we most often buy and sell for each.</p>
+    </div>
+    <ol class="line-list">""" + "".join(
+    f'<li class="rv"><span class="n">{i + 1:02d}</span><h3>{t}</h3><p class="io">{a} → {z}</p><p>{d}</p><p class="mk">{m}</p></li>'
+    for i, (t, a, z, d, m) in enumerate(PROCESS)) + """</ol>
+  </div>
+</section>"""
+
+INTRO_HEAD = """<script>(function(){var d=document.documentElement;try{if(sessionStorage.getItem("mtech_intro")||matchMedia("(prefers-reduced-motion: reduce)").matches)return;sessionStorage.setItem("mtech_intro","1")}catch(e){return}d.classList.add("intro");var l=document.createElement("link");l.rel="preload";l.as="video";l.type="video/mp4";l.href="{rel}assets/video/reveal/reveal-"+(matchMedia("(max-width: 759px)").matches?"m":"d")+".mp4";document.head.appendChild(l);setTimeout(function(){d.classList.remove("intro")},4500)})()</script>
+<link rel="preload" as="image" href="{rel}assets/video/hero/bg-m.webp" media="(max-width: 759px)" fetchpriority="high">
+<link rel="preload" as="image" href="{rel}assets/video/hero/bg-d.webp" media="(min-width: 760px)" fetchpriority="high">
+"""
+
+def intro_body():
+    logo = logo_svg("intro-logo").replace('role="img" aria-label="M Tech logo"', 'aria-hidden="true"')
+    return ("""<script>(function(){var d=document.documentElement;if(!d.classList.contains("intro"))return;"""
+            """var o=document.createElement("div"),done=false,playing=false;o.className="intro-ov";"""
+            """o.innerHTML='<video muted playsinline preload="auto" aria-hidden="true"></video>""" + logo + """<button class="intro-skip" type="button">Skip intro</button>';"""
+            """document.body.appendChild(o);var v=o.querySelector("video");"""
+            """function out(){if(done)return;done=true;o.classList.add("out");d.classList.remove("intro");try{v.pause()}catch(e){}setTimeout(function(){o.remove();dispatchEvent(new Event("mt:introdone"))},420)}"""
+            """function fb(){if(done||o.classList.contains("fb"))return;o.classList.add("fb");try{v.pause();v.removeAttribute("src");v.load()}catch(e){}setTimeout(out,1300)}"""
+            """v.muted=true;v.src="{rel}assets/video/reveal/reveal-"+(matchMedia("(max-width: 759px)").matches?"m":"d")+".mp4";"""
+            """v.addEventListener("playing",function(){if(playing||o.classList.contains("fb"))return;playing=true;setTimeout(out,3200)});"""
+            """v.addEventListener("ended",out);v.addEventListener("error",fb);"""
+            """var p=v.play();if(p&&p.catch)p.catch(fb);setTimeout(function(){if(!playing)fb()},900);"""
+            """o.addEventListener("click",out);addEventListener("keydown",function(e){if(e.key==="Escape")out()});setTimeout(out,4300)})()</script>\n""")
+
+home = f"""
+<section class="hero" aria-labelledby="hero-h">
+  <div class="hero-media" aria-hidden="true">
+    <picture><source media="(max-width: 759px)" srcset="{{rel}}assets/video/hero/bg-m.webp" width="540" height="960"><img src="{{rel}}assets/video/hero/bg-d.webp" alt="" width="1280" height="720" fetchpriority="high"></picture>
+    <video class="hero-vid" muted loop playsinline preload="none" data-d="{{rel}}assets/video/hero/bg-d.mp4" data-m="{{rel}}assets/video/hero/bg-m.mp4"></video>
+    <div class="hero-shade"></div>
+  </div>
+  <div class="wrap hero-in">
+    <p class="eyebrow">Since 1988 · Lahore and Faisalabad</p>
+    <h1 class="hero-h" id="hero-h">Spinning machinery, bought and sold.</h1>
+    <p class="hero-sub">New and pre-owned textile machinery, spare parts, yarn and cotton, and complete mills. For spinning mills across Pakistan.</p>
+    <div class="hero-btns">
+      <a class="btn btn-wa btn-lg" href="{wa_link('Assalam o Alaikum M Tech, I want to ask about ')}" target="_blank" rel="noopener">{ICON["wa"]}<span>WhatsApp us</span></a>
+      <a class="btn btn-ghost-w btn-lg" href="{{rel}}services.html"><span>Our services</span></a>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="services">
+  <div class="wrap">
+    <div class="sec-hd center rv">
       <p class="eyebrow">What we do</p>
-      <h2 class="h2 reveal-lines">Four ways we work with mills</h2>
-      <p class="sec-sub">One company for the machine, the parts that keep it running, the yarn it makes, and the mill itself.</p>
+      <h2 class="h2">Four ways we work with mills.</h2>
     </div>
-    <p class="swipe-hint" aria-hidden="true">Swipe <svg viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M13 6l6 6-6 6"/></svg></p>
-    <div class="svc-grid swipe">
-      {"".join(f'''<a class="svc-card" href="{{rel}}services/{s}.html">
-        <div class="svc-img"><img src="{{rel}}assets/img/{im}" alt="" loading="lazy" width="1376" height="768"></div>
-        <div class="svc-body"><span class="svc-n">0{i+1}</span><h3>{t}</h3><p>{d}</p><span class="more">Learn more {ICON["arr"]}</span></div>
-      </a>''' for i, (s, t, d, im) in enumerate(SERVICES))}
+    <div class="tiles">
+      {"".join(f"""<a class="tile rv" href="{{rel}}services/{s}.html">
+        <div class="tile-img">{img_tag(im, IMG_ALT[im], *IMG_SIZE[im], sizes="(max-width: 759px) 100vw, 580px")}</div>
+        <div class="tile-b"><h3>{t}</h3><p>{d}</p><span class="more">Learn more</span></div>
+      </a>""" for s, t, d, im in SERVICES)}
     </div>
   </div>
 </section>
 
-<section class="mc" id="machine" aria-label="Inside an Autoconer winding unit" data-js="{{rel}}{V('js/machine3d.js')}">
-  <div class="mc-pin">
-    <div class="mc-bg" aria-hidden="true"></div>
-    <div class="wrap mc-in">
-      <div class="mc-copy">
-        <p class="eyebrow">Inside the machine</p>
-        <h2 class="h2">We know an Autoconer down to the last part.</h2>
-        <ol class="mc-steps">
-          <li class="mc-step"><b>01</b><span>A complete winding unit, the way it reaches your mill.</span></li>
-          <li class="mc-step"><b>02</b><span>Opened up: every part we check, value and replace.</span></li>
-          <li class="mc-step"><b>03</b><span>Splicer, clearer and drum decide your yarn quality. We source all three.</span></li>
-          <li class="mc-step"><b>04</b><span>Back together, tested, ready to run.</span></li>
-        </ol>
-        <p class="mc-hint" aria-hidden="true"><svg viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M4 12h16M8 8l-4 4 4 4M16 8l4 4-4 4"/></svg>Drag to turn the machine</p>
-      </div>
-      <div class="mc-stage" role="img" aria-label="3D model of an Autoconer winding unit opening into its parts"><div class="mc-labels" aria-hidden="true"></div><div class="mc-load" aria-hidden="true"><span></span></div></div>
+<section class="sec alt teaser">
+  <div class="wrap">
+    <div class="sec-hd center rv">
+      <p class="eyebrow">Machinery in stock</p>
+      <h2 class="h2">See what is in the godown.</h2>
+      <p class="sec-sub">Stock changes every week. Pictures and details for every item, department by department, with a PDF list to download.</p>
     </div>
+    <ul class="teaser-list" id="stockTeaser" hidden></ul>
+    <a class="btn btn-pri btn-lg rv" href="{{rel}}stock.html"><span>View stock</span></a>
   </div>
 </section>
 
-<section class="pr" id="line" aria-label="How cotton becomes yarn">
-  <div class="pr-pin">
-    <div class="pr-stage" aria-hidden="true">
-      {"".join(f'''<video class="pr-vid" data-src="{{rel}}assets/video/p{i+1}.mp4" poster="{{rel}}assets/video/p{i+1}.jpg" muted loop playsinline preload="none"></video>''' for i in range(len(PROCESS)))}
-      <div class="pr-shade"></div>
-    </div>
-    <div class="wrap pr-in">
-      <div class="pr-hd">
-        <p class="eyebrow">How cotton becomes yarn</p>
-        <h2 class="h2">From the first bale<br>to the final cone</h2>
-      </div>
-      <div class="pr-copy">
-        {"".join(f'''<article class="pr-step"><span class="pr-n">{i+1:02d}<small>/ {len(PROCESS):02d}</small></span><h3>{t}</h3><p class="pr-state"><b>{a}</b><i aria-hidden="true">→</i><b>{z}</b></p><p class="pr-what">{d}</p><p class="pr-makes">{m}</p></article>''' for i, (t, a, z, d, m) in enumerate(PROCESS))}
-      </div>
-    </div>
-    <div class="wrap pr-rail">
-      <ol>{"".join(f'<li><span></span><b>{t}</b></li>' for t, *_ in PROCESS)}</ol>
-      <div class="pr-bar"><i></i></div>
-    </div>
-  </div>
-</section>
-
-<section class="sec how">
-  <div class="wrap how-in">
-    <div class="how-l">
-      <p class="eyebrow">How a deal works</p>
-      <h2 class="h2 reveal-lines">Simple, direct, and done in person</h2>
-      <p class="sec-sub">No middle layers. You talk to the family that has run M Tech for over three decades.</p>
-      <a class="btn btn-pri" href="{{rel}}contact.html"><span>Start a conversation</span>{ICON["arr"]}</a>
-    </div>
-    <ol class="steps">
-      <li class="step"><span>01</span><div><h3>Tell us what you need</h3><p>A machine to buy, machinery to sell, a part, yarn or cotton. Call or WhatsApp with the details.</p></div></li>
-      <li class="step"><span>02</span><div><h3>We check and value it</h3><p>We see the machinery, check its condition and tell you honestly what it is worth.</p></div></li>
-      <li class="step"><span>03</span><div><h3>A fair price, clean paperwork</h3><p>Terms are agreed face to face and every deal is documented properly.</p></div></li>
-      <li class="step"><span>04</span><div><h3>Delivery, and installation if needed</h3><p>We arrange dispatch from our godown. Installation and shifting are available on request.</p></div></li>
-    </ol>
-  </div>
-</section>
-
-<section class="sec founder">
-  <div class="wrap founder-in">
-    <div class="founder-img reveal-img"><img src="{{rel}}assets/img/ceo.jpg" alt="Abdul Rasheed Gill, Founder and CEO of M Tech Textile Traders" loading="lazy" width="900" height="900"></div>
-    <div class="founder-copy">
-      <p class="eyebrow">Founder & CEO</p>
-      <h2 class="h2 reveal-lines">Abdul Rasheed Gill</h2>
-      <blockquote>Over three decades in spinning, from spare parts to complete mills.</blockquote>
-      <p>Abdul Rasheed Gill started in spinning in 1988 and built M Tech from spare parts into machinery, complete mills and imports. Today his four sons work alongside him.</p>
-      <div class="founder-btns">
-        <a class="btn btn-pri" href="{CEO_SITE}" target="_blank" rel="noopener"><span>About the CEO</span>{ICON["arr"]}</a>
-        <a class="btn btn-ghost" href="{{rel}}team.html"><span>Meet the team</span></a>
-      </div>
+<section class="sec">
+  <div class="wrap">
+    <h2 class="vh">Why mills deal with M Tech</h2>
+    <div class="trust">
+      <div class="rv"><h3>Since 1988</h3><p>Over three decades in the spinning trade, from spare parts to complete mills.</p></div>
+      <div class="rv"><h3>Lahore &amp; Faisalabad</h3><p>Head office in Manga Mandi, Lahore. Machinery godown in Darul Ehsan Town, Faisalabad.</p></div>
+      <div class="rv"><h3>A family business</h3><p>Founded by Abdul Rasheed Gill and run today with his four sons. You deal with the owners.</p><a class="more" href="{CEO_SITE}/" target="_blank" rel="noopener">About the founder</a></div>
     </div>
   </div>
 </section>
 {cta_band()}
-'''
+"""
 
 # ---------------------------------------------------------------- ABOUT
-about = pagehead("About M Tech", "A family business, <span class=\"acc\">built on spinning</span>",
+about = pagehead("About M Tech", "A family business, built on spinning.",
                  "M Tech Textile Traders has served Pakistan's textile industry since 1988, from Manga Mandi in Lahore and a warehouse in Faisalabad.",
-                 [("index.html", "Home"), (None, "About")]) + f'''
+                 [("index.html", "Home"), (None, "About")], ("mill-exterior", IMG_ALT["mill-exterior"])) + f"""
 <section class="sec">
-  <div class="wrap story">
-    <div class="story-copy">
-      <h2 class="h2 reveal-lines">Our story</h2>
+  <div class="wrap split">
+    <div class="split-copy rv">
+      <h2 class="h2">Our story</h2>
       <p>Abdul Rasheed Gill began his career in 1988 in the spinning trade, working with open-end and spinning machinery. That same year he founded M Tech Textile Traders.</p>
       <p>The business started with spare parts. It grew into machinery, then complete mills, and then imports from abroad. Through all of it, the work stayed the same: know the machine, value it honestly, and stand behind the deal.</p>
       <p>Today M Tech is run by Abdul Rasheed Gill and his four sons, from our head office in Manga Mandi, Lahore, and our warehouse in Darul Ehsan Town, Faisalabad.</p>
     </div>
-    <figure class="story-img reveal-img"><img src="{{rel}}assets/img/family.jpg" alt="Abdul Rasheed Gill with two of his sons" loading="lazy" width="1400" height="933"><figcaption>Abdul Rasheed Gill with his sons</figcaption></figure>
+    <figure class="split-img rv">{img_tag("family", IMG_ALT["family"], *IMG_SIZE["family"], sizes="(max-width: 900px) 100vw, 560px")}<figcaption>Abdul Rasheed Gill with his sons</figcaption></figure>
   </div>
 </section>
 
 <section class="sec alt">
   <div class="wrap">
-    <div class="sec-hd"><p class="eyebrow">Timeline</p><h2 class="h2 reveal-lines">How M Tech grew</h2></div>
+    <h2 class="vh">M Tech in numbers</h2>
+    <div class="facts">
+      <div class="rv"><b>1988</b><span>Serving the industry since</span></div>
+      <div class="rv"><b>50+</b><span>Mills bought and sold</span></div>
+      <div class="rv"><b>100+</b><span>Factory owners we advise</span></div>
+      <div class="rv"><b>All</b><span>Industrial cities of Pakistan</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="wrap split rev">
+    <div class="split-copy rv">
+      <p class="eyebrow">Founder &amp; CEO</p>
+      <h2 class="h2">Abdul Rasheed Gill</h2>
+      <blockquote>Over three decades in spinning, from spare parts to complete mills.</blockquote>
+      <p>He started in spinning in 1988 and built M Tech from spare parts into machinery, complete mills and imports. Today his four sons work alongside him.</p>
+      <div class="btn-row">
+        <a class="btn btn-pri" href="{CEO_SITE}/" target="_blank" rel="noopener"><span>About the CEO</span></a>
+        <a class="btn btn-ghost" href="{{rel}}team.html"><span>Meet the team</span></a>
+      </div>
+    </div>
+    <div class="split-img rv">{img_tag("ceo", "Abdul Rasheed Gill, Founder and CEO of M Tech Textile Traders", 900, 900, sizes="(max-width: 900px) 100vw, 560px")}</div>
+  </div>
+</section>
+
+<section class="sec alt">
+  <div class="wrap">
+    <div class="sec-hd rv"><p class="eyebrow">Timeline</p><h2 class="h2">How M Tech grew</h2></div>
     <ol class="tl">
-      <li><b>1988</b><h3>The start</h3><p>Abdul Rasheed Gill enters the spinning trade and founds M Tech Textile Traders.</p></li>
-      <li><b>Spare parts</b><h3>Parts first</h3><p>The business builds its name supplying spinning spare parts to mills.</p></li>
-      <li><b>Machinery</b><h3>Machines</h3><p>M Tech moves into buying and selling new and pre-owned textile machinery.</p></li>
-      <li><b>Mills</b><h3>Complete mills</h3><p>The company begins buying, selling and brokering complete mills, with more than 50 traded.</p></li>
-      <li><b>Imports</b><h3>Beyond Pakistan</h3><p>Machinery imports and international exhibitions widen what we can source for clients.</p></li>
-      <li><b>Today</b><h3>The next generation</h3><p>Four sons join the business, and export is the next step.</p></li>
+      <li class="rv"><b>1988</b><h3>The start</h3><p>Abdul Rasheed Gill enters the spinning trade and founds M Tech Textile Traders.</p></li>
+      <li class="rv"><b>Spare parts</b><h3>Parts first</h3><p>The business builds its name supplying spinning spare parts to mills.</p></li>
+      <li class="rv"><b>Machinery</b><h3>Machines</h3><p>M Tech moves into buying and selling new and pre-owned textile machinery.</p></li>
+      <li class="rv"><b>Mills</b><h3>Complete mills</h3><p>The company begins buying, selling and brokering complete mills, with more than 50 traded.</p></li>
+      <li class="rv"><b>Imports</b><h3>Beyond Pakistan</h3><p>Machinery imports and international exhibitions widen what we can source for clients.</p></li>
+      <li class="rv"><b>Today</b><h3>The next generation</h3><p>Four sons join the business, and export is the next step.</p></li>
     </ol>
   </div>
 </section>
 
 <section class="sec">
   <div class="wrap">
-    <div class="sec-hd"><p class="eyebrow">How we work</p><h2 class="h2 reveal-lines">What clients can count on</h2></div>
+    <div class="sec-hd rv"><p class="eyebrow">How we work</p><h2 class="h2">What clients can count on</h2></div>
     <div class="vals">
-      <div class="val"><span class="val-i">01</span><h3>Honest valuation</h3><p>We tell you what a machine is really worth, whether you are buying or selling.</p></div>
-      <div class="val"><span class="val-i">02</span><h3>Spinning knowledge</h3><p>Over three decades with spinning machinery, department by department.</p></div>
-      <div class="val"><span class="val-i">03</span><h3>Nationwide reach</h3><p>Clients in every industrial city of Pakistan, and more than 100 factory owners we advise.</p></div>
-      <div class="val"><span class="val-i">04</span><h3>A family name</h3><p>The people you deal with own the business. Our name is on every deal.</p></div>
+      <div class="val rv"><span class="val-i">01</span><h3>Honest valuation</h3><p>We tell you what a machine is really worth, whether you are buying or selling.</p></div>
+      <div class="val rv"><span class="val-i">02</span><h3>Spinning knowledge</h3><p>Over three decades with spinning machinery, department by department.</p></div>
+      <div class="val rv"><span class="val-i">03</span><h3>Nationwide reach</h3><p>Clients in every industrial city of Pakistan, and more than 100 factory owners we advise.</p></div>
+      <div class="val rv"><span class="val-i">04</span><h3>A family name</h3><p>The people you deal with own the business. Our name is on every deal.</p></div>
     </div>
     <p class="note-line">Member of the Chamber of Commerce. We currently sell within Pakistan; export is planned soon.</p>
   </div>
 </section>
 {cta_band()}
-'''
+"""
 
 # ---------------------------------------------------------------- SERVICES OVERVIEW
-services = pagehead("Services", "Machinery, parts, <span class=\"acc\">yarn and mills</span>",
+def _svc_row(i, s, t, d, im):
+    pic = img_tag(im, IMG_ALT[im], *IMG_SIZE[im], lazy=i > 0, sizes="(max-width: 900px) 100vw, 560px")
+    return (f'<a class="svc-row rv" href="{{rel}}services/{s}.html"><div class="svc-row-img">{pic}</div>'
+            f'<div class="svc-row-t"><h2>{t}</h2><p>{d}</p><span class="more">Learn more</span></div></a>')
+
+services = pagehead("Services", "Machinery, parts, yarn and mills.",
                     "Spinning is our core. Everything else we do grows out of knowing those machines well.",
-                    [("index.html", "Home"), (None, "Services")]) + f'''
-<section class="sec">
+                    [("index.html", "Home"), (None, "Services")]) + f"""
+<section class="sec svc-top">
   <div class="wrap">
     <div class="svc-list">
-      {"".join(f'''<a class="svc-row" href="{{rel}}services/{s}.html">
-        <span class="svc-n">0{i+1}</span>
-        <div class="svc-row-img"><img src="{{rel}}assets/img/{im}" alt="" loading="lazy" width="1376" height="768"></div>
-        <div class="svc-row-t"><h2>{t}</h2><p>{d}</p></div>
-        <span class="svc-go">{ICON["arr"]}</span>
-      </a>''' for i, (s, t, d, im) in enumerate(SERVICES))}
+      {"".join(_svc_row(i, *x) for i, x in enumerate(SERVICES))}
     </div>
     <div class="extra">
-      <div><h3>Installation & shifting</h3><p>Available on request when a client needs machinery installed or a unit moved.</p></div>
-      <div><h3>Godown visits</h3><p>See machinery in person at our Faisalabad warehouse. Visits are by appointment, so please call first.</p></div>
+      <div class="rv"><h3>Installation &amp; shifting</h3><p>Available on request when a client needs machinery installed or a unit moved.</p></div>
+      <div class="rv"><h3>Godown visits</h3><p>See machinery in person at our Faisalabad warehouse. Visits are by appointment, so please call first.</p></div>
     </div>
   </div>
 </section>
+
+<section class="sec alt">
+  <div class="wrap">
+    <div class="sec-hd rv">
+      <p class="eyebrow">How a deal works</p>
+      <h2 class="h2">Simple, direct, and done in person.</h2>
+      <p class="sec-sub">No middle layers. You talk to the family that has run M Tech for over three decades.</p>
+    </div>
+    <ol class="steps">
+      <li class="step rv"><span>01</span><h3>Tell us what you need</h3><p>A machine to buy, machinery to sell, a part, yarn or cotton. Call or WhatsApp with the details.</p></li>
+      <li class="step rv"><span>02</span><h3>We check and value it</h3><p>We see the machinery, check its condition and tell you honestly what it is worth.</p></li>
+      <li class="step rv"><span>03</span><h3>A fair price, clean paperwork</h3><p>Terms are agreed face to face and every deal is documented properly.</p></li>
+      <li class="step rv"><span>04</span><h3>Delivery, and installation if needed</h3><p>We arrange dispatch from our godown. Installation and shifting are available on request.</p></li>
+    </ol>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="wrap">
+    <div class="sec-hd rv">
+      <p class="eyebrow">Makes we deal in</p>
+      <h2 class="h2">The machines Pakistan's mills run.</h2>
+      <p class="sec-sub">We buy, sell and source parts for these makes. Brand names belong to their owners; we are not their official agent.</p>
+    </div>
+    <ul class="makes rv">{"".join(f"<li>{b}</li>" for b in BRANDS)}</ul>
+  </div>
+</section>
 {cta_band()}
-'''
+"""
 
 def guide_html(gd):
     """Educational guide section for a service page (general know-how, no company claims beyond the site's facts)."""
-    items = "".join(f'''<article class="guide-item"><span class="val-i">{n + 1:02d}</span><h3>{h}</h3>{b}</article>''' for n, (h, b) in enumerate(gd["items"]))
+    items = "".join(f'''<article class="guide-item rv"><span class="val-i">{n + 1:02d}</span><h3>{h}</h3>{b}</article>''' for n, (h, b) in enumerate(gd["items"]))
     return f'''<section class="sec alt guide">
   <div class="wrap">
-    <div class="sec-hd"><p class="eyebrow">{gd["eyebrow"]}</p><h2 class="h2 reveal-lines">{gd["h2"]}</h2><p class="sec-sub">{gd["sub"]}</p></div>
+    <div class="sec-hd rv"><p class="eyebrow">{gd["eyebrow"]}</p><h2 class="h2">{gd["h2"]}</h2><p class="sec-sub">{gd["sub"]}</p></div>
     <div class="guide-grid">{items}</div>
   </div>
 </section>'''
@@ -548,7 +507,7 @@ def faq_html(faqs):
     qs = "".join(f'''<details class="faq-q"{" open" if n == 0 else ""}><summary><h3>{q}</h3></summary><div class="faq-a"><p>{a}</p></div></details>''' for n, (q, a) in enumerate(faqs))
     return f'''<section class="sec faq-sec">
   <div class="wrap faq">
-    <div class="sec-hd faq-hd"><p class="eyebrow">FAQ</p><h2 class="h2 reveal-lines">Questions we are asked</h2><p class="sec-sub">Not answered here? Call or WhatsApp <a href="tel:{tel(OFFICIAL)}">{OFFICIAL}</a>.</p></div>
+    <div class="sec-hd faq-hd rv"><p class="eyebrow">FAQ</p><h2 class="h2">Questions we are asked</h2><p class="sec-sub">Not answered here? Call or WhatsApp <a href="tel:{tel(OFFICIAL)}">{OFFICIAL}</a>.</p></div>
     <div class="faq-list">{qs}</div>
   </div>
 </section>'''
@@ -570,31 +529,31 @@ SVC_ALT = {
     "mill-sale-purchase": ["Spinning mill for sale in Pakistan", "Mill sale purchase Pakistan", "Textile mill brokerage"],
 }
 
-def svc_page(slug, eyebrow, title, lead, img, intro, groups, extra_html=""):
+def svc_page(slug, eyebrow, title, lead, img, intro, groups, extra_html="", after_html=""):
     i = [s for s, *_ in SERVICES].index(slug)
     if slug in SVC_UR:
         intro += f'<p class="ur" lang="ur" dir="rtl">{SVC_UR[slug]}</p>'
     others = [x for x in SERVICES if x[0] != slug]
     g = "".join(f'''<div class="grp"><h2 class="grp-t">{gt}</h2><ul class="chips">{"".join(f"<li>{x}</li>" for x in items)}</ul></div>''' for gt, items in groups)
-    nxt = SERVICES[(i + 1) % 4]
     more = SVC_MORE.get(slug, {})
     guide = guide_html(more["guide"]) if more.get("guide") else ""
     faqs = more.get("faqs", [])
-    body = pagehead(eyebrow, title, lead, [("index.html", "Home"), ("services.html", "Services"), (None, SERVICES[i][1])], img) + f'''
+    body = pagehead(eyebrow, title, lead, [("index.html", "Home"), ("services.html", "Services"), (None, SERVICES[i][1])], (img, IMG_ALT[img])) + f'''
 <section class="sec">
   <div class="wrap svc-detail">
-    <div class="svc-intro">{intro}</div>
-    <div class="grps">{g}</div>
+    <div class="svc-intro rv">{intro}</div>
+    <div class="grps rv">{g}</div>
     {extra_html}
   </div>
 </section>
+{after_html}
 {guide}
 {faq_html(faqs) if faqs else ""}
 <section class="sec alt">
   <div class="wrap">
-    <div class="sec-hd"><p class="eyebrow">Other services</p></div>
-    <div class="svc-grid three">
-      {"".join(f'''<a class="svc-card" href="{s}.html"><div class="svc-img"><img src="{{rel}}assets/img/{im}" alt="" loading="lazy" width="1376" height="768"></div><div class="svc-body"><h3>{t}</h3><p>{d}</p><span class="more">Learn more {ICON["arr"]}</span></div></a>''' for s, t, d, im in others)}
+    <div class="sec-hd rv"><p class="eyebrow">Other services</p><h2 class="h2">More from M Tech</h2></div>
+    <div class="tiles three">
+      {"".join(f'''<a class="tile rv" href="{s}.html"><div class="tile-img">{img_tag(im, IMG_ALT[im], *IMG_SIZE[im], sizes="(max-width: 759px) 100vw, 380px")}</div><div class="tile-b"><h3>{t}</h3><p>{d}</p><span class="more">Learn more</span></div></a>''' for s, t, d, im in others)}
     </div>
   </div>
 </section>
@@ -610,7 +569,7 @@ def svc_page(slug, eyebrow, title, lead, img, intro, groups, extra_html=""):
                 "hasOfferCatalog": {"@type": "OfferCatalog", "name": SERVICES[i][1], "itemListElement": [
                     {"@type": "OfferCatalog", "name": plain(gt), "itemListElement": [
                         {"@type": "Offer", "itemOffered": {"@type": "Service", "name": plain(x)}} for x in items]} for gt, items in groups]},
-                "image": f"{SITE}/assets/img/{img}"},
+                "image": f"{SITE}/assets/img/{img}.webp"},
                crumbs_ld([("Home", "index.html"), ("Services", "services.html"), (SERVICES[i][1], path)]))
     if faqs:
         ld["@graph"].append({"@type": "FAQPage", "@id": url_of(path) + "#faq", "isPartOf": {"@id": url_of(path) + "#webpage"},
@@ -618,80 +577,80 @@ def svc_page(slug, eyebrow, title, lead, img, intro, groups, extra_html=""):
     page(path, t, d, body, active="services.html", ld=ld)
 
 # ---------------------------------------------------------------- TEAM
-team_cards = "".join(f'''<a class="tm" href="{{rel}}team/{t["slug"]}.html">
-  <div class="tm-img"><img src="{{rel}}assets/img/{t["img"]}" alt="{t["name"]}" loading="lazy" width="720" height="960"></div>
-  <div class="tm-b"><span class="tm-role">{t["role"]}</span><h3>{t["name"]}</h3><p>{t["short"]}</p><span class="more">View profile {ICON["arr"]}</span></div>
-</a>''' for t in TEAM)
+def _tm_card(t):
+    pic = img_tag(t["img"], t["name"], *IMG_SIZE[t["img"]], sizes="(max-width: 759px) 50vw, 280px")
+    return (f'<a class="tm rv" href="{{rel}}team/{t["slug"]}.html"><div class="tm-img">{pic}</div>'
+            f'<div class="tm-b"><span class="tm-role">{t["role"]}</span><h3>{t["name"]}</h3><p>{t["short"]}</p><span class="more">View profile</span></div></a>')
 
-team = pagehead("Our team", "The family <span class=\"acc\">behind M Tech</span>",
+team_cards = "".join(_tm_card(t) for t in TEAM)
+
+team = pagehead("Our team", "The family behind M Tech.",
                 "A founder with over three decades in spinning, and four sons who run the business with him.",
-                [("index.html", "Home"), (None, "Team")]) + f'''
+                [("index.html", "Home"), (None, "Team")], ("family", IMG_ALT["family"])) + f"""
 <section class="sec">
-  <div class="wrap">
-    <div class="ceo">
-      <div class="ceo-img reveal-img"><img src="{{rel}}assets/img/ceo.jpg" alt="Abdul Rasheed Gill" loading="lazy" width="900" height="900"></div>
-      <div class="ceo-copy">
-        <p class="eyebrow">Founder & CEO</p>
-        <h2 class="h2">Abdul Rasheed Gill</h2>
-        <p>Abdul Rasheed Gill founded M Tech Textile Traders in 1988 after starting out in spinning. He built the company from spare parts into machinery, complete mills and imports, and has advised more than 100 factory owners on machinery value, new mill setup and production.</p>
-        <div class="ceo-btns">
-          <a class="btn btn-pri" href="{CEO_SITE}" target="_blank" rel="noopener"><span>About the CEO</span>{ICON["arr"]}</a>
-          <a class="btn btn-ghost" href="tel:+923004681423">{ICON["ph"]}<span>0300-4681423</span></a>
-        </div>
+  <div class="wrap ceo">
+    <div class="ceo-img rv">{img_tag("ceo", "Abdul Rasheed Gill", 900, 900, sizes="(max-width: 900px) 100vw, 520px")}</div>
+    <div class="ceo-copy rv">
+      <p class="eyebrow">Founder &amp; CEO</p>
+      <h2 class="h2">Abdul Rasheed Gill</h2>
+      <p>Abdul Rasheed Gill founded M Tech Textile Traders in 1988 after starting out in spinning. He built the company from spare parts into machinery, complete mills and imports, and has advised more than 100 factory owners on machinery value, new mill setup and production.</p>
+      <div class="btn-row">
+        <a class="btn btn-pri" href="{CEO_SITE}/" target="_blank" rel="noopener"><span>About the CEO</span></a>
+        <a class="btn btn-ghost" href="tel:+923004681423">{ICON["ph"]}<span>0300-4681423</span></a>
       </div>
     </div>
   </div>
 </section>
 <section class="sec alt">
   <div class="wrap">
-    <div class="sec-hd"><p class="eyebrow">The next generation</p><h2 class="h2 reveal-lines">Four brothers, one business</h2></div>
+    <div class="sec-hd rv"><p class="eyebrow">The next generation</p><h2 class="h2">Four brothers, one business.</h2></div>
     <div class="tm-grid">{team_cards}</div>
   </div>
 </section>
 {cta_band()}
-'''
+"""
 
 def member_page(t):
     i = TEAM.index(t)
     nxt = TEAM[(i + 1) % len(TEAM)]
     first = t["name"].split()[0]
-    body = f'''
+    pic = img_tag(t["img"], t["name"], *IMG_SIZE[t["img"]], lazy=False, sizes="(max-width: 900px) 100vw, 480px", prio=True)
+    body = f"""
 <section class="mem">
-  <div class="gear-bg" aria-hidden="true">{gear_svg()}</div>
   <div class="wrap mem-in">
-    <div class="mem-img reveal-img"><img src="{{rel}}assets/img/{t["img"]}" alt="{t["name"]}" width="720" height="960" fetchpriority="high"></div>
+    <div class="mem-img">{pic}</div>
     <div class="mem-copy">
-      <nav class="crumbs" aria-label="Breadcrumb"><a href="{{rel}}index.html">Home</a> <span>/</span> <a href="{{rel}}team.html">Team</a> <span>/</span> <span aria-current="page">{t["name"]}</span></nav>
+      <nav class="crumbs" aria-label="Breadcrumb"><a href="{{rel}}index.html">Home</a> <span aria-hidden="true">/</span> <a href="{{rel}}team.html">Team</a> <span aria-hidden="true">/</span> <span aria-current="page">{t["name"]}</span></nav>
       <p class="eyebrow">{t["role"]}</p>
-      <h1 class="h1 reveal-lines">{t["name"]}</h1>
+      <h1 class="h1">{t["name"]}</h1>
       {"".join(f"<p>{p}</p>" for p in t["bio"])}
       <h2 class="mini">Looks after</h2>
       <ul class="chips">{"".join(f"<li>{d}</li>" for d in t["duties"])}</ul>
       <div class="mem-contact">
         <a class="btn btn-pri btn-lg" href="tel:{tel(t["phone"])}">{ICON["ph"]}<span>Call {first}: {t["phone"]}</span></a>
-        <a class="btn btn-wa btn-lg" href="https://wa.me/92{re.sub(r"\D", "", t["phone"])[1:]}" target="_blank" rel="noopener">{ICON["wa"]}<span>WhatsApp</span></a>
+        <a class="btn btn-ghost btn-lg" href="https://wa.me/92{re.sub(r"[^0-9]", "", t["phone"])[1:]}" target="_blank" rel="noopener">{ICON["wa"]}<span>WhatsApp</span></a>
       </div>
       <div class="mem-nav"><a href="{{rel}}team.html">← Back to team</a><a href="{nxt["slug"]}.html">Next: {nxt["name"]} →</a></div>
     </div>
   </div>
 </section>
-{cta_band()}'''
+{cta_band()}"""
     path = f"team/{t['slug']}.html"
     title = f"{t['name']}, {t['role']} | M Tech Textile Traders"
     desc = f"{t['name']}, {t['role']} at M Tech Textile Traders, Lahore. {t['short']}"
     if len(desc) > 160:
         desc = f"{t['name']}, {t['role']} at M Tech Textile Traders. {t['short']}"
     person = {"@type": "Person", "@id": url_of(path) + "#person", "name": t["name"], "jobTitle": t["role"],
-              "telephone": tel(t["phone"]), "image": f"{SITE}/assets/img/{t['img']}", "url": url_of(path), "worksFor": BIZ_REF}
+              "telephone": tel(t["phone"]), "image": f"{SITE}/assets/img/{t['img']}.webp", "url": url_of(path), "worksFor": BIZ_REF}
     ld = graph(webpage(path, "ProfilePage", title, desc, {"mainEntity": {"@id": person["@id"]}}), person,
                crumbs_ld([("Home", "index.html"), ("Team", "team.html"), (t["name"], path)]))
     page(path, title, desc, body, active="team.html", ld=ld)
 
 # ---------------------------------------------------------------- CONTACT
-contact = pagehead("Contact", "Talk to us <span class=\"acc\">directly</span>",
+contact = pagehead("Contact", "Talk to us directly.",
                    "We are available on call. Send an inquiry and it opens straight in WhatsApp.",
                    [("index.html", "Home"), (None, "Contact")]) + f'''
-<section class="sec">
+<section class="sec svc-top">
   <div class="wrap contact">
     <div class="c-info">
       <div class="c-block main">
@@ -752,8 +711,7 @@ contact = pagehead("Contact", "Talk to us <span class=\"acc\">directly</span>",
 
 # ---------------------------------------------------------------- STOCK
 def stock_head(crumbs_html, eyebrow, title_html, lead_html, actions=""):
-    return f'''<section class="phead stk-head">
-  <div class="gear-bg" aria-hidden="true">{gear_svg()}</div>
+    return f'''<section class="phead no-img stk-head">
   <div class="wrap phead-in">
     <nav class="crumbs" aria-label="Breadcrumb">{crumbs_html}</nav>
     <p class="eyebrow">{eyebrow}</p>
@@ -766,8 +724,8 @@ def stock_head(crumbs_html, eyebrow, title_html, lead_html, actions=""):
 STOCK_SCRIPTS = '<script src="{rel}' + V('js/stock.js') + '" defer></script>'
 PDF_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19h14"/></svg>'
 
-stock_index = stock_head('<a href="{rel}index.html">Home</a> <span>/</span> <span aria-current="page">Stock</span>',
-    "Stock", 'What we have <span class="acc">in stock</span>',
+stock_index = stock_head('<a href="{rel}index.html">Home</a> <span aria-hidden="true">/</span> <span aria-current="page">Stock</span>',
+    "Stock", 'What we have in stock.',
     "What we have right now, department by department. Open a folder for pictures and details of every item, or download its stock list as a PDF.") + f'''
 <section class="sec stk-sec">
   <div class="wrap">
@@ -778,7 +736,7 @@ stock_index = stock_head('<a href="{rel}index.html">Home</a> <span>/</span> <spa
 </section>
 ''' + cta_band("Need something that is not listed?", "Stock changes every week. Tell us what you are looking for and we will check the godown and our network.")
 
-stock_folder = stock_head('<a href="/index.html">Home</a> <span>/</span> <a href="/stock.html">Stock</a> <span>/</span> <span aria-current="page" id="stkCrumb">Folder</span>',
+stock_folder = stock_head('<a href="/index.html">Home</a> <span aria-hidden="true">/</span> <a href="/stock.html">Stock</a> <span aria-hidden="true">/</span> <span aria-current="page" id="stkCrumb">Folder</span>',
     "Stock", '<span id="stkTitle">Loading</span>', '<span id="stkLead">Pictures and details of every item in this folder.</span>',
     f'<div class="stk-actions"><button class="btn btn-pri btn-lg" id="stkPdf" type="button" disabled>{PDF_ICON}<span>Download PDF</span></button><a class="btn btn-ghost btn-lg" href="/stock.html"><span>All folders</span></a></div>') + '''
 <section class="sec stk-sec">
@@ -790,7 +748,7 @@ stock_folder = stock_head('<a href="/index.html">Home</a> <span>/</span> <a href
 </section>
 ''' + cta_band("Interested in something from this list?", "Call or WhatsApp us with the item name. Godown visits are by appointment.")
 
-stock_item = stock_head('<a href="/index.html">Home</a> <span>/</span> <a href="/stock.html">Stock</a> <span>/</span> <a href="/stock.html" id="stkFolderLink">Folder</a> <span>/</span> <span aria-current="page" id="stkCrumb">Item</span>',
+stock_item = stock_head('<a href="/index.html">Home</a> <span aria-hidden="true">/</span> <a href="/stock.html">Stock</a> <span aria-hidden="true">/</span> <a href="/stock.html" id="stkFolderLink">Folder</a> <span aria-hidden="true">/</span> <span aria-current="page" id="stkCrumb">Item</span>',
     '<span id="stkEyebrow">Stock</span>', '<span id="stkTitle">Loading</span>', '<span id="stkLead"></span>') + f'''
 <section class="sec stk-sec">
   <div class="wrap stk-detail" id="stkDetail">
@@ -807,8 +765,8 @@ stock_item = stock_head('<a href="/index.html">Home</a> <span>/</span> <a href="
 <div class="stk-lb" id="stkLb" hidden><button class="stk-lb-x" type="button" aria-label="Close">&times;</button><button class="stk-lb-p" type="button" aria-label="Previous picture">&#8249;</button><img alt=""><button class="stk-lb-n" type="button" aria-label="Next picture">&#8250;</button></div>
 '''
 
-NOTFOUND = pagehead("404", "This page <span class=\"acc\">is not here</span>", "The link may be old or mistyped.") + '''
-<section class="sec"><div class="wrap" style="display:flex;gap:12px;flex-wrap:wrap">
+NOTFOUND = pagehead("404", "This page is not here.", "The link may be old or mistyped.") + '''
+<section class="sec svc-top"><div class="wrap btn-row">
 <a class="btn btn-pri" href="/index.html"><span>Go to home</span></a><a class="btn btn-ghost" href="/contact.html"><span>Contact us</span></a></div></section>'''
 
 # ---------------------------------------------------------------- STRUCTURED DATA
@@ -1034,25 +992,24 @@ def build():
         extra = [crumbs_ld([("Home", "index.html"), (crumb, path)])] if crumb else []
         page(path, t, d, body, ld=graph(webpage(path, kind, t, d), *nodes, *extra), **kw)
 
-    top("index.html", "WebPage", home, nodes=(BUSINESS, WEBSITE), bodycls="home vidhero",
-        extra=f'<link rel="preload" href="{V("js/vendor/three-mt.min.js")}" as="script">\n')
+    top("index.html", "WebPage", home, nodes=(BUSINESS, WEBSITE), bodycls="home", extra=INTRO_HEAD, body_start=intro_body())
     top("about.html", "AboutPage", about, "About")
     top("services.html", "CollectionPage", services, "Services", nodes=({"@type": "ItemList", "itemListElement": [
         {"@type": "ListItem", "position": i + 1, "name": t, "url": url_of(f"services/{s}.html")} for i, (s, t, _, _) in enumerate(SERVICES)]},))
 
-    svc_page("machinery", "Service 01 · Used spinning machinery", "Textile machinery, <span class=\"acc\">new and pre-owned</span>",
+    svc_page("machinery", "Service 01 · Used spinning machinery", "Textile machinery, new and pre-owned",
         "We buy and sell all types of new and pre-owned textile machinery. Spinning is our core, and we handle other departments when clients need them.",
-        "ring-hall.jpg",
+        "ring-hall",
         "<p>Whether you are setting up a new unit, replacing a section, or selling machinery you no longer need, we deal directly. We inspect machinery, value it honestly and arrange the sale or purchase end to end.</p><p>Our warehouse in Faisalabad holds machinery you can see in person, by appointment. See what is <a href=\"{rel}stock.html\">in stock now</a>, and the <a href=\"spare-parts.html\">spinning spare parts</a> we supply to keep it running.</p>",
         [("Spinning preparatory", ["Blowroom lines", "Carding machines", "Draw frames", "Lap formers", "Combers", "Simplex / roving frames"]),
          ("Spinning", ["Ring frames", "Compact spinning systems", "Open-end (rotor) spinning", "Doubling and TFO"]),
          ("Winding & finishing", ["Autoconers", "Cone winding", "Yarn conditioning"]),
          ("Other departments, on request", ["Weaving", "Knitting", "Processing", "Utilities"])],
-        '<div class="callout"><h3>Selling your machinery?</h3><p>Send the make, model, year and a few photos on WhatsApp. We will tell you what it is worth.</p><a class="btn btn-wa" href="' + wa_link("Assalam o Alaikum M Tech, I want to sell machinery: ") + '" target="_blank" rel="noopener">' + ICON["wa"] + '<span>Send details</span></a></div>')
+        '<div class="callout"><h3>Selling your machinery?</h3><p>Send the make, model, year and a few photos on WhatsApp. We will tell you what it is worth.</p><a class="btn btn-wa" href="' + wa_link("Assalam o Alaikum M Tech, I want to sell machinery: ") + '" target="_blank" rel="noopener">' + ICON["wa"] + '<span>Send details</span></a></div>', after_html=LINE_HTML)
 
-    svc_page("spare-parts", "Service 02 · Spare parts, Lahore", "Spinning spare parts, <span class=\"acc\">all types</span>",
+    svc_page("spare-parts", "Service 02 · Spare parts, Lahore", "Spinning spare parts, all types",
         "The parts that keep a spinning line running, supplied for the makes mills actually use.",
-        "spare-parts.jpg",
+        "spare-parts",
         "<p>Spare parts are where M Tech began. We supply parts across every department of a spinning mill, new and pre-owned, and help you find the right part for your make and model. Looking for a whole machine instead? See our <a href=\"machinery.html\">used spinning machinery</a>.</p>",
         [("Ring frame & drafting parts", ["Spindles and spindle inserts", "Top rollers", "Rubber cots", "Top and bottom aprons", "Bottom fluted rollers", "Top arms / weighting arms", "Rings and travellers", "Bobbin holders", "Spindle tapes", "Tangential belts"]),
          ("Carding parts", ["Cylinder wire", "Doffer wire", "Licker-in wire", "Flat tops", "Card clothing", "Coiler parts"]),
@@ -1060,17 +1017,17 @@ def build():
          ("Simplex & Autoconer winding parts", ["Flyers", "Roving bobbins", "Autoconer splicer parts", "Winding drums"]),
          ("General mill parts", ["Bearings", "Gears", "Belts", "Pneumafil and suction parts", "Motors"])])
 
-    svc_page("yarn-cotton", "Service 03 · Yarn traders", "Cotton yarn and cotton, <span class=\"acc\">traded</span>",
+    svc_page("yarn-cotton", "Service 03 · Yarn traders", "Cotton yarn and cotton, traded",
         "All kinds of yarn, and cotton both local and imported.",
-        "yarn-cones.jpg",
+        "yarn-cones",
         "<p>Our place in the spinning trade means we know both ends: the cotton that goes in and the yarn that comes out. We trade both, matching buyers and sellers with the counts and qualities they need.</p>",
         [("Yarn", ["Carded cotton yarn", "Combed cotton yarn", "Compact yarn", "Open-end yarn", "Polyester", "PC and CVC blends", "Viscose", "Slub and fancy yarn"]),
          ("Cotton", ["Local cotton", "Imported cotton", "Lint and bales"])],
-        '<figure class="wide-img reveal-img"><img src="{rel}assets/img/cotton-bales.jpg" alt="Cotton bales in a warehouse" loading="lazy" width="1376" height="768"></figure>')
+        '<figure class="wide-img rv">' + img_tag("cotton-bales", IMG_ALT["cotton-bales"], 1376, 768, sizes="(max-width: 1240px) 100vw, 1180px") + '</figure>')
 
-    svc_page("mill-sale-purchase", "Service 04 · Mills, Pakistan", "Spinning mill sale &amp; purchase, <span class=\"acc\">with advice</span>",
+    svc_page("mill-sale-purchase", "Service 04 · Mills, Pakistan", "Spinning mill sale &amp; purchase, with advice",
         "Buying or selling a complete mill, with an experienced hand on both sides of the table.",
-        "mill-exterior.jpg",
+        "mill-exterior",
         "<p>We have traded more than 50 mills. We buy and sell complete mills and units ourselves, and we act as the middleman when a buyer and seller need someone both sides can trust.</p><p>Advice comes with it. We help owners understand what their machinery is worth, how to set up a new mill, and how to get more from the production they have.</p>",
         [("Deals", ["Complete mill sale", "Complete mill purchase", "Units and sections", "Middleman / brokerage"]),
          ("Advisory", ["Machinery valuation", "New mill setup", "Production advice", "Upgrade planning", "Installation and shifting on request"])])
