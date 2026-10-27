@@ -327,7 +327,7 @@ def line_html(sec_cls=""):
 
 LINE_HTML = line_html()
 
-INTRO_HEAD = """<script>(function(){var d=document.documentElement;try{if(sessionStorage.getItem("mtech_intro")||matchMedia("(prefers-reduced-motion: reduce)").matches)return;sessionStorage.setItem("mtech_intro","1")}catch(e){return}d.classList.add("intro");var l=document.createElement("link");l.rel="preload";l.as="video";l.type="video/mp4";l.href="{rel}assets/video/reveal/reveal-"+(matchMedia("(max-width: 759px)").matches?"m":"d")+".mp4";document.head.appendChild(l);setTimeout(function(){d.classList.remove("intro")},4000)})()</script>
+INTRO_HEAD = """<script>(function(){var d=document.documentElement;try{if(sessionStorage.getItem("mtech_intro")||matchMedia("(prefers-reduced-motion: reduce)").matches)return;sessionStorage.setItem("mtech_intro","1")}catch(e){return}d.classList.add("intro");var l=document.createElement("link");l.rel="preload";l.as="video";l.type="video/mp4";l.href="{rel}assets/video/reveal/reveal-"+(matchMedia("(max-aspect-ratio: 4/5)").matches?"m":"d")+".mp4";document.head.appendChild(l);setTimeout(function(){d.classList.remove("intro")},4000)})()</script>
 <link rel="preload" as="image" href="{rel}assets/video/hero/bg-m.webp" media="(max-width: 759px)" fetchpriority="high">
 <link rel="preload" as="image" href="{rel}assets/video/hero/bg-d.webp" media="(min-width: 760px)" fetchpriority="high">
 """
@@ -344,7 +344,7 @@ def intro_body():
             """document.body.appendChild(o);var v=o.querySelector("video");"""
             """function out(){if(done)return;done=true;o.classList.add("out");d.classList.remove("intro");try{v.pause()}catch(e){}setTimeout(function(){dispatchEvent(new Event("mt:introdone"))},120);setTimeout(function(){o.remove()},600)}"""
             """function fb(){if(done||o.classList.contains("fb"))return;o.classList.add("fb");try{v.pause();v.removeAttribute("src");v.load()}catch(e){}setTimeout(out,1400)}"""
-            """v.muted=true;v.src="{rel}assets/video/reveal/reveal-"+(matchMedia("(max-width: 759px)").matches?"m":"d")+".mp4";"""
+            """v.muted=true;v.src="{rel}assets/video/reveal/reveal-"+(matchMedia("(max-aspect-ratio: 4/5)").matches?"m":"d")+".mp4";"""
             """v.addEventListener("playing",function(){if(playing||o.classList.contains("fb"))return;playing=true;o.classList.add("go");setTimeout(out,2150)});"""
             """v.addEventListener("loadedmetadata",function(){try{v.playbackRate=1.3}catch(e){}});"""
             """v.addEventListener("ended",out);v.addEventListener("error",fb);"""
