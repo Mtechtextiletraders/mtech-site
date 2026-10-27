@@ -98,8 +98,6 @@
   const TARGETS = '.rv, [data-split], .wp, .draw, .grps, .line, .ftr-mark, [data-count]';
   const onIn = (el) => {
     el.classList.add('in');
-    // cards in a horizontal swipe deck reveal together (the off-screen ones would never "enter")
-    if (el.parentElement && el.parentElement.matches('[data-swipe]')) [...el.parentElement.children].forEach((c) => { c.classList.add('in'); $$('.wp', c).forEach((x) => x.classList.add('in')); });
     if (el.classList.contains('wp')) setTimeout(() => el.classList.add('settled'), 2000 + (parseInt(el.style.getPropertyValue('--d')) || 0));
     if (el.dataset.count) count(el);
   };
@@ -122,33 +120,11 @@
     if (r.top < innerHeight && r.bottom > 0) onIn(el);
   }), 2500);
 
-  /* ---------- home hero: entrance after the intro, background video ---------- */
+  /* ---------- home hero: entrance after the intro ---------- */
   if (hero) {
     const go = () => hero.classList.add('go');
     if (html.classList.contains('intro')) { addEventListener('mt:introdone', go, { once: true }); setTimeout(go, 5000); }
     else requestAnimationFrame(() => setTimeout(go, 80));
-  }
-  const vid = hero && hero.querySelector('.hero-vid');
-  const saveData = navigator.connection && navigator.connection.saveData;
-  if (vid && !reduce && !saveData) {
-    const mq = matchMedia('(max-width: 759px)');
-    let inView = true, started = false;
-    const play = () => { if (!started || document.hidden || !inView) return; const p = vid.play(); if (p) p.catch(() => {}); };
-    const setSrc = () => { const s = mq.matches ? vid.dataset.m : vid.dataset.d; if (vid.getAttribute('src') !== s) { vid.src = s; vid.load(); } };
-    const start = () => {
-      if (started) return; started = true;
-      vid.muted = true; setSrc();
-      vid.addEventListener('playing', () => hero.classList.add('vid-on'), { once: true });
-      play();
-    };
-    mq.addEventListener('change', () => { if (started) { hero.classList.remove('vid-on'); setSrc(); vid.addEventListener('playing', () => hero.classList.add('vid-on'), { once: true }); play(); } });
-    if (IO) new IntersectionObserver(([e]) => { inView = e.isIntersecting; inView ? play() : vid.pause(); }).observe(hero);
-    document.addEventListener('visibilitychange', () => { document.hidden ? vid.pause() : play(); });
-    const whenLoaded = (fn) => document.readyState === 'complete' ? fn() : addEventListener('load', fn, { once: true });
-    whenLoaded(() => {
-      if (html.classList.contains('intro')) addEventListener('mt:introdone', () => setTimeout(start, 150), { once: true });
-      else setTimeout(start, 200);
-    });
   }
 
   /* ---------- home: real stock folders flip in ---------- */
@@ -213,12 +189,6 @@
     if (!reduce) setInterval(() => { if (inView && !document.hidden && Date.now() > hold) goTo(idx + 1); }, 3200);
   });
 
-  /* ---------- mobile swipe deck dots ---------- */
-  $$('[data-swipe]').forEach((deck) => {
-    const dots = $$('i', deck.nextElementSibling || document.createElement('div')); if (!dots.length) return;
-    const upd = () => { const cs = [...deck.children]; let best = 0, bd = Infinity; cs.forEach((c, n) => { const d = Math.abs(c.offsetLeft - deck.scrollLeft - 16); if (d < bd) { bd = d; best = n; } }); dots.forEach((d, n) => d.classList.toggle('on', n === best)); };
-    deck.addEventListener('scroll', () => requestAnimationFrame(upd), { passive: true }); upd();
-  });
 
   /* ---------- gentle photo parallax on wide screens (transform only, small) ---------- */
   const pxEls = $$('.px');

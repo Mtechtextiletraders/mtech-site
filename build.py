@@ -328,8 +328,7 @@ def line_html(sec_cls=""):
 LINE_HTML = line_html()
 
 INTRO_HEAD = """<script>(function(){var d=document.documentElement;try{if(sessionStorage.getItem("mtech_intro")||matchMedia("(prefers-reduced-motion: reduce)").matches)return;sessionStorage.setItem("mtech_intro","1")}catch(e){return}d.classList.add("intro");var l=document.createElement("link");l.rel="preload";l.as="video";l.type="video/mp4";l.href="{rel}assets/video/reveal/reveal-"+(matchMedia("(max-aspect-ratio: 4/5)").matches?"m":"d")+".mp4";document.head.appendChild(l);setTimeout(function(){d.classList.remove("intro")},4000)})()</script>
-<link rel="preload" as="image" href="{rel}assets/video/hero/bg-m.webp" media="(max-width: 759px)" fetchpriority="high">
-<link rel="preload" as="image" href="{rel}assets/video/hero/bg-d.webp" media="(min-width: 760px)" fetchpriority="high">
+<link rel="preload" as="image" href="{rel}assets/img/ring-hall.webp" imagesrcset="{rel}assets/img/ring-hall-800.webp 800w, {rel}assets/img/ring-hall.webp 1376w" imagesizes="(max-width: 759px) 45vw, (max-width: 1100px) 46vw, 560px" fetchpriority="high">
 """
 
 def intro_body():
@@ -408,8 +407,7 @@ home = f"""
         </div>
       </div>
       <div class="hero-media arch" aria-hidden="true">
-        <picture><source media="(max-width: 759px)" srcset="{{rel}}assets/video/hero/bg-m.webp" width="540" height="960"><img src="{{rel}}assets/video/hero/bg-d.webp" alt="" width="1280" height="720" fetchpriority="high"></picture>
-        <video class="hero-vid" muted loop playsinline preload="none" data-d="{{rel}}assets/video/hero/bg-d.mp4" data-m="{{rel}}assets/video/hero/bg-m.mp4"></video>
+        {img_tag("ring-hall", "", *IMG_SIZE["ring-hall"], lazy=False, sizes="(max-width: 759px) 45vw, (max-width: 1100px) 46vw, 560px", prio=True)}
       </div>
     </div>
   </div>
@@ -424,13 +422,12 @@ home = f"""
       <h2 class="h2">Four things we <em>know well.</em></h2>
       <p class="sec-sub rv">Pick the one you need. Each page lists the machines or parts we handle and answers the questions mills usually ask us.</p>
     </div>
-    <div class="cat-grid swipe" data-swipe>
+    <div class="cat-grid">
       {"".join(f'''<a class="cat rv" href="{{rel}}services/{s}.html">
         <div class="cat-img">{img_tag(im, IMG_ALT[im], *IMG_SIZE[im], sizes="(max-width: 759px) 80vw, (max-width: 1100px) 46vw, 280px")}</div>
         <div class="cat-b"><span class="cat-n">0{i + 1}</span><h3>{t}</h3><p>{d}</p><span class="more">Read more {ICON["arr"]}</span></div>
       </a>''' for i, (s, t, d, im) in enumerate(SERVICES))}
     </div>
-    <div class="swipe-dots" aria-hidden="true">{"<i></i>" * len(SERVICES)}</div>
   </div>
 </section>
 
