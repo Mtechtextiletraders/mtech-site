@@ -48,6 +48,10 @@ input:focus,textarea:focus{border-color:var(--blue);outline:none;box-shadow:0 0 
 .login-card p.sub{color:var(--mute);margin:6px 0 24px}
 .login-card form{display:flex;flex-direction:column;gap:16px}
 .login-card .btn{height:50px;margin-top:6px}
+.msg-ok{background:#E8F6EE;color:var(--green);border-radius:10px;padding:10px 12px;font-size:14px;margin:0}
+.lnk-btn{background:none;border:0;color:var(--blue);font-weight:600;font-size:14px;cursor:pointer;padding:8px;margin-top:4px;align-self:center}
+#forgotBox,#resetForm{display:flex;flex-direction:column;gap:14px}
+#forgotBox[hidden],#resetForm[hidden]{display:none}
 .msg-err{background:var(--red-50);color:var(--red);border-radius:10px;padding:10px 12px;font-size:14px;margin:0}
 
 /* app */
@@ -160,12 +164,29 @@ select{display:block;width:100%;margin-top:6px;height:46px;padding:0 12px;border
   <div class="login-card">
     <img src="/assets/img/logo.png" alt="M Tech" width="84" height="44">
     <h1>Stock Panel</h1>
-    <p class="sub">Log in to manage M Tech stock.</p>
+    <p class="sub" id="loginSub">Log in to manage M Tech stock.</p>
     <form id="loginForm">
       <label>Username<input type="text" name="username" autocomplete="username" autocapitalize="none" required></label>
       <label>Password<input type="password" name="password" autocomplete="current-password" required></label>
+      <label class="chk"><input type="checkbox" name="remember" checked> Keep me logged in on this device</label>
       <p class="msg-err" id="loginErr" hidden></p>
       <button class="btn btn-pri" type="submit">Log in</button>
+      <button class="lnk-btn" type="button" id="forgotBtn">Forgot password?</button>
+    </form>
+    <div id="forgotBox" hidden>
+      <p class="sub">We will email a link to set a new password to the M Tech email (mtechtextiletradersofficial@gmail.com).</p>
+      <p class="msg-err" id="forgotErr" hidden></p>
+      <p class="msg-ok" id="forgotOk" hidden></p>
+      <button class="btn btn-pri" type="button" id="forgotSend" style="width:100%">Send reset link</button>
+      <button class="lnk-btn" type="button" id="forgotBack">Back to log in</button>
+    </div>
+    <form id="resetForm" hidden>
+      <p class="sub">Choose a new password for the stock panel.</p>
+      <input type="text" name="username" autocomplete="username" value="admin" hidden>
+      <label>New password<input type="password" name="pw1" autocomplete="new-password" minlength="8" required></label>
+      <label>Type it again<input type="password" name="pw2" autocomplete="new-password" minlength="8" required></label>
+      <p class="msg-err" id="resetErr" hidden></p>
+      <button class="btn btn-pri" type="submit">Save new password</button>
     </form>
   </div>
 </section>
@@ -274,18 +295,41 @@ select{display:block;width:100%;margin-top:6px;height:46px;padding:0 12px;border
   const showErr = (el, msg) => { el.textContent = msg; el.hidden = !msg; };
 
   /* ---------- auth ---------- */
-  function showLogin() { $('#vApp').hidden = true; $('#vLogin').hidden = false; setTimeout(() => $('#loginForm [name=username]').focus(), 50); }
+  function showLogin() { loginView('login'); $('#vApp').hidden = true; $('#vLogin').hidden = false; setTimeout(() => $('#loginForm [name=username]').focus(), 50); }
   function showApp() { $('#vLogin').hidden = true; $('#vApp').hidden = false; route(); }
   $('#loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const f = new FormData(e.target), btn = e.target.querySelector('button');
     btn.disabled = true; showErr($('#loginErr'), '');
     try {
-      await api('login', { method: 'POST', body: JSON.stringify({ username: f.get('username'), password: f.get('password') }) });
+      await api('login', { method: 'POST', body: JSON.stringify({ username: f.get('username'), password: f.get('password'), remember: !!f.get('remember') }) });
       e.target.reset(); showApp();
     } catch (er) { showErr($('#loginErr'), er.message); }
     btn.disabled = false;
   });
+  // forgot / reset password
+  const loginView = (v) => { $('#loginForm').hidden = v !== 'login'; $('#forgotBox').hidden = v !== 'forgot'; $('#resetForm').hidden = v !== 'reset'; $('#loginSub').hidden = v !== 'login'; $('.login-card h1').textContent = v === 'reset' ? 'New password' : v === 'forgot' ? 'Forgot password' : 'Stock Panel'; };
+  $('#forgotBtn').onclick = () => { showErr($('#forgotErr'), ''); $('#forgotOk').hidden = true; loginView('forgot'); };
+  $('#forgotBack').onclick = () => loginView('login');
+  $('#forgotSend').onclick = async () => {
+    const b = $('#forgotSend'); b.disabled = true; showErr($('#forgotErr'), ''); $('#forgotOk').hidden = true;
+    try { const d = await api('forgot', { method: 'POST', body: '{}' }); $('#forgotOk').textContent = `Link sent to ${d.to}. Open it within 30 minutes.`; $('#forgotOk').hidden = false; }
+    catch (er) { showErr($('#forgotErr'), er.message); }
+    b.disabled = false;
+  };
+  const resetToken = (location.hash.match(/^#reset=([a-z0-9]+)/) || [])[1];
+  $('#resetForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const el = e.target.elements;
+    if (el.pw1.value !== el.pw2.value) return showErr($('#resetErr'), 'The two passwords are not the same.');
+    const b = e.target.querySelector('button'); b.disabled = true; showErr($('#resetErr'), '');
+    try {
+      await api('reset', { method: 'POST', body: JSON.stringify({ token: resetToken, password: el.pw1.value }) });
+      history.replaceState(null, '', location.pathname); toast('New password saved'); showApp();
+    } catch (er) { showErr($('#resetErr'), er.message); }
+    b.disabled = false;
+  });
+
   $('#logout').addEventListener('click', async () => { await api('logout', { method: 'POST' }).catch(() => {}); location.hash = ''; showLogin(); });
   $('#homeLink').addEventListener('click', (e) => { e.preventDefault(); location.hash = ''; });
 
@@ -609,7 +653,8 @@ select{display:block;width:100%;margin-top:6px;height:46px;padding:0 12px;border
   [dF, dE].forEach((d) => d.addEventListener('cancel', (e) => { if (d === dE && uploading) e.preventDefault(); }));
 
   /* ---------- start ---------- */
-  api('me').then((d) => d.admin ? showApp() : showLogin()).catch(() => showLogin());
+  if (resetToken) { $('#vApp').hidden = true; $('#vLogin').hidden = false; loginView('reset'); }
+  else api('me').then((d) => d.admin ? showApp() : showLogin()).catch(() => showLogin());
 })();
 </script>
 </body>

@@ -72,7 +72,7 @@
     const d = detailsOf(f, e).filter((x) => !x.long && x.label.toLowerCase() !== 'type').slice(0, 4);
     return `<article class="stk-item">
       <a class="stk-item-img" href="${href}" aria-label="Pictures of ${esc(t)}">
-        ${e.photos.length ? `<img src="${img(e.photos[0])}" alt="${esc(t)}" loading="${i < 3 ? 'eager' : 'lazy'}">` : `<span class="stk-folder-ph">${ICON_IMG}<small>Pictures on request</small></span>`}
+        ${e.photos.length ? `<img src="${img(e.photos[0])}" alt="${esc(t)}" loading="${i < 3 ? 'eager' : 'lazy'}">` : `<span class="stk-folder-ph">${ICON_IMG}<small>Pictures on demand</small></span>`}
         ${type ? `<span class="stk-type">${esc(type)}</span>` : ''}
         ${e.photos.length > 1 ? `<span class="stk-count">${ICON_IMG}${e.photos.length}</span>` : ''}
       </a>
@@ -186,7 +186,7 @@
         const href = itemHref(folder, e);
         return `<article class="stk-item">
           <a class="stk-item-img" href="${href}" aria-label="Pictures of ${esc(titleOf(folder, e))}">
-            ${e.photos.length ? `<img src="${img(e.photos[0])}" alt="${esc(titleOf(folder, e))}" loading="lazy">` : `<span class="stk-folder-ph">${ICON_IMG}<small>Pictures on request</small></span>`}
+            ${e.photos.length ? `<img src="${img(e.photos[0])}" alt="${esc(titleOf(folder, e))}" loading="lazy">` : `<span class="stk-folder-ph">${ICON_IMG}<small>Pictures on demand</small></span>`}
             ${e.photos.length > 1 ? `<span class="stk-count">${ICON_IMG}${e.photos.length}</span>` : ''}
           </a>
           <div class="stk-item-b">
@@ -247,7 +247,7 @@
         span.textContent = 'Copied'; setTimeout(() => { span.textContent = old; }, 1800);
       });
 
-      if (!ph.length) { galEl.innerHTML = `<div class="stk-noimg">${ICON_IMG}<p>Pictures are available on request.</p></div>`; return; }
+      if (!ph.length) { galEl.innerHTML = `<div class="stk-noimg">${ICON_IMG}<p>Pictures are available on demand.</p></div>`; return; }
 
       // WhatsApp status picture: the prepared one if there is one, otherwise drawn here
       const stBtn = $('#stkStatus');

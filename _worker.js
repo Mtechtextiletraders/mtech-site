@@ -16,6 +16,8 @@ const SCHEMA = [
      photos TEXT NOT NULL DEFAULT '[]', sort INTEGER NOT NULL DEFAULT 0,
      created INTEGER NOT NULL, updated INTEGER NOT NULL)`,
   `CREATE INDEX IF NOT EXISTS entries_folder ON entries(folder_id, sort, created)`,
+  `CREATE TABLE IF NOT EXISTS settings (k TEXT PRIMARY KEY, v TEXT NOT NULL)`,
+  `CREATE TABLE IF NOT EXISTS resets (token TEXT PRIMARY KEY, exp INTEGER NOT NULL)`,
 ];
 
 // columns added later (Buy & Sell): folder kind + password + watermark flag, entry password + status picture
@@ -58,12 +60,35 @@ function json(data, status = 200, extra = {}) {
 const err = (msg, status = 400) => json({ error: msg }, status);
 
 // ---------------------------------------------------------------- auth
+// The admin password starts as the ADMIN_PASSWORD secret. After a reset by email it is kept
+// (salted and hashed) in the settings table, and that one is used from then on.
+const ADMIN_EMAIL = 'mtechtextiletradersofficial@gmail.com';
+async function getSetting(env, k) { const r = await env.DB.prepare('SELECT v FROM settings WHERE k = ?').bind(k).first(); return r ? r.v : null; }
+async function setSetting(env, k, v) { await env.DB.prepare('INSERT INTO settings (k, v) VALUES (?, ?) ON CONFLICT(k) DO UPDATE SET v = excluded.v').bind(k, v).run(); }
+async function pbkdf2(password, salt) {
+  const key = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveBits']);
+  return b64u(await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt: enc.encode(salt), iterations: 100000 }, key, 256));
+}
+async function storedHash(env) {
+  if (!env.DB) return null;
+  await ensureSchema(env);
+  return getSetting(env, 'admin_pw');
+}
+async function checkPassword(env, password) {
+  const h = await storedHash(env);
+  if (h) {
+    const [salt, hash] = h.split('$');
+    return timingSafeEqual(await pbkdf2(String(password), salt), hash);
+  }
+  return !!env.ADMIN_PASSWORD && timingSafeEqual(await sha(String(password)), await sha(env.ADMIN_PASSWORD));
+}
 async function hmacKey(env) {
-  const secret = `${env.ADMIN_PASSWORD}|${(env.ADMIN_USER || 'admin').toLowerCase()}|mtech-stock`;
+  // a new password (reset) also signs everyone out
+  const secret = `${env.ADMIN_PASSWORD}|${(env.ADMIN_USER || 'admin').toLowerCase()}|${(await storedHash(env)) || ''}|mtech-stock`;
   return crypto.subtle.importKey('raw', enc.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign', 'verify']);
 }
-async function makeToken(env) {
-  const payload = b64u(enc.encode(JSON.stringify({ exp: Date.now() + 14 * 864e5 })));
+async function makeToken(env, days) {
+  const payload = b64u(enc.encode(JSON.stringify({ exp: Date.now() + days * 864e5 })));
   const sig = b64u(await crypto.subtle.sign('HMAC', await hmacKey(env), enc.encode(payload)));
   return `${payload}.${sig}`;
 }
@@ -79,6 +104,11 @@ async function isAdmin(req, env) {
     const p = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
     return p.exp > Date.now();
   } catch { return false; }
+}
+async function sendMail(env, subject, text) {
+  if (!env.MAILER) throw new Error('mailer-not-connected');
+  const r = await env.MAILER.fetch('https://mailer/send', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ subject, text }) });
+  if (!r.ok) throw new Error('mail-failed ' + r.status + ' ' + (await r.text()).slice(0, 200));
 }
 function timingSafeEqual(a, b) {
   if (a.length !== b.length) return false;
@@ -216,14 +246,44 @@ async function api(req, env, path) {
   // auth endpoints
   if (seg[0] === 'login' && method === 'POST') {
     if (!env.ADMIN_PASSWORD) return err('Admin password is not set on the server yet.', 503);
-    const { username = '', password = '' } = await body();
+    const { username = '', password = '', remember = true } = await body();
     const okUser = String(username).trim().toLowerCase() === (env.ADMIN_USER || 'admin').toLowerCase();
-    const okPass = timingSafeEqual(await sha(String(password)), await sha(env.ADMIN_PASSWORD));
+    const okPass = await checkPassword(env, password);
     if (!okUser || !okPass) {
       await new Promise((r) => setTimeout(r, 900));
       return err('Wrong username or password.', 401);
     }
-    return json({ ok: true }, 200, { 'set-cookie': cookie(await makeToken(env), 14 * 86400) });
+    const days = remember ? 90 : 1;
+    return json({ ok: true }, 200, { 'set-cookie': cookie(await makeToken(env, days), days * 86400) });
+  }
+  // forgot password: a one-time link goes to the M Tech email only
+  if (seg[0] === 'forgot' && method === 'POST') {
+    const last = Number(await getSetting(env, 'reset_sent') || 0);
+    if (Date.now() - last < 60 * 1000) return err('A link was sent a moment ago. Please check the email, or try again in a minute.', 429);
+    const token = rid(32);
+    await env.DB.prepare('DELETE FROM resets WHERE exp < ?').bind(Date.now()).run();
+    await env.DB.prepare('INSERT INTO resets (token, exp) VALUES (?, ?)').bind(await sha(token), Date.now() + 30 * 60 * 1000).run();
+    const link = `${new URL(req.url).origin}/mtech-panel/#reset=${token}`;
+    try {
+      await sendMail(env, 'M Tech Stock Panel: reset your password',
+        `Assalam o Alaikum,\n\nSomeone asked to reset the password of the M Tech stock panel (mtechtextiletraders.com/mtech-panel).\n\nOpen this link to set a new password. It works once, for 30 minutes:\n${link}\n\nUsername: ${env.ADMIN_USER || 'admin'}\n\nIf you did not ask for this, ignore this email; the password stays the same.\n\nM Tech Textile Traders website`);
+    } catch (e) {
+      return err('The email could not be sent right now. Please try again later.', 502);
+    }
+    await setSetting(env, 'reset_sent', String(Date.now()));
+    return json({ ok: true, to: ADMIN_EMAIL.replace(/^(.{3}).*(@.*)$/, '$1•••$2') });
+  }
+  if (seg[0] === 'reset' && method === 'POST') {
+    const { token = '', password = '' } = await body();
+    const pw = String(password);
+    if (pw.length < 8) return err('Use at least 8 characters for the new password.');
+    const row = await env.DB.prepare('SELECT exp FROM resets WHERE token = ?').bind(await sha(String(token))).first();
+    if (!row || row.exp < Date.now()) return err('This link has expired or was already used. Ask for a new one.', 400);
+    const salt = rid(16);
+    await setSetting(env, 'admin_pw', `${salt}$${await pbkdf2(pw, salt)}`);
+    await env.DB.prepare('DELETE FROM resets').run();
+    const days = 90;
+    return json({ ok: true }, 200, { 'set-cookie': cookie(await makeToken(env, days), days * 86400) });
   }
   if (seg[0] === 'logout') return json({ ok: true }, 200, { 'set-cookie': cookie('', 0) });
   if (seg[0] === 'me') return json({ admin: await isAdmin(req, env) });
@@ -567,7 +627,7 @@ async function stockPage(req, env, url, parts) {
     h1 = crumb = name; eyebrow = f.kind === 'lot' ? f.name : label;
     if (!open) { lead = 'Password protected.'; noindex = true; }
     else {
-      lead = e.photos.length ? `${e.photos.length} ${e.photos.length === 1 ? 'picture' : 'pictures'}` : 'Pictures available on request.';
+      lead = e.photos.length ? `${e.photos.length} ${e.photos.length === 1 ? 'picture' : 'pictures'}` : 'Pictures available on demand.';
       desc = f.fields.filter((x) => e.data[x.id] && !x.long).map((x) => `${x.label}: ${e.data[x.id]}`).join(' · ').slice(0, 300) || desc;
     }
   }
