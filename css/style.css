@@ -945,3 +945,42 @@ body:has(.mtc.open) .fab{opacity:0;pointer-events:none;transform:scale(.8)}
   .hero-sub{font-size:13px}
   .ts-i p,.cat-b p{font-size:13px}
 }
+
+/* ---------- Buy & Sell (Nov 2026): tabs, single machines, required, password lock ---------- */
+.stk-folder-img img,.stk-item-img img{object-fit:cover}
+.stk-tabs{display:inline-flex;gap:6px;padding:6px;background:#fff;border:1px solid var(--line);border-radius:999px;margin-bottom:34px;max-width:100%}
+.stk-tabs button{min-height:46px;padding:0 24px;border:0;border-radius:999px;background:none;font-family:var(--f-b);font-weight:600;font-size:15.5px;color:var(--ink);cursor:pointer;white-space:nowrap;transition:background-color .2s,color .2s}
+.stk-tabs button:hover{color:var(--blue)}
+.stk-tabs button[aria-selected=true]{background:var(--navy);color:#fff}
+.stk-sub{display:flex;align-items:baseline;justify-content:space-between;gap:8px 24px;flex-wrap:wrap;margin:0 0 18px}
+.stk-sub p{margin:0;color:var(--mute);font-size:15px}
+#stkMachines+.stk-sub,#pSale .stk-items+.stk-sub{margin-top:52px}
+.stk-type{position:absolute;left:12px;top:12px;background:#fff;color:var(--navy);font-weight:600;font-size:12.5px;padding:5px 11px;border-radius:999px;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.is-locked .stk-folder-ph,.is-locked .stk-item-img .stk-folder-ph{background:var(--navy);color:#fff}
+.is-locked .stk-folder-ph small{color:rgba(255,255,255,.75)}
+.stk-req{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:22px;display:flex;flex-direction:column;gap:14px}
+.stk-req-tag{align-self:flex-start;font-weight:600;font-size:12.5px;color:var(--orange);background:#fdf0e8;padding:5px 11px;border-radius:999px}
+.stk-req .btn{margin-top:auto;align-self:stretch;width:auto;flex:none}
+.stk-lock{grid-column:1/-1;max-width:460px;margin:0 auto;background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:32px 28px;display:flex;flex-direction:column;gap:10px;text-align:left}
+.stk-lock-i{width:52px;height:52px;border-radius:14px;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;margin-bottom:6px}
+.stk-lock-i svg{width:26px;height:26px}
+.stk-lock p{margin:0;color:var(--mute);font-size:15px}
+.stk-lock label{font-weight:600;font-size:14px;margin-top:8px}
+.stk-lock-row{display:flex;gap:10px}
+.stk-lock-row input{flex:1;min-width:0;min-height:48px;padding:0 14px;border:1.5px solid var(--line);border-radius:var(--rb);font:inherit;font-size:16px;background:#fff}
+.stk-lock-row input:focus{border-color:var(--blue);outline:none;box-shadow:0 0 0 4px var(--blue-50)}
+.stk-lock-row .btn{width:auto;flex:none;align-self:auto}
+.stk-lock .stk-lock-err{color:#b42318;font-weight:600}
+.stk-items.is-lock{display:block}
+.stk-detail.is-lock{grid-template-columns:1fr}
+.stk-info-btns .btn[hidden],.stk-actions .btn[hidden],.stk-info[hidden]{display:none}
+@media (max-width:759px){
+  .stk-tabs{display:flex;width:100%}
+  .stk-tabs button{flex:1;padding:0 12px;font-size:14.5px}
+  .stk-sub{flex-direction:column;gap:4px}
+  .stk-type{left:8px;top:8px;font-size:11px;padding:4px 8px}
+  .stk-req{padding:16px;gap:10px}
+  .stk-lock{padding:24px 18px}
+  .stk-lock-row{flex-direction:column}
+  .stk-lock-row .btn{width:100%}
+}

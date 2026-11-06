@@ -133,9 +133,11 @@
     fetch('/api/folders', { headers: { accept: 'application/json' } })
       .then((r) => (r.ok ? r.json() : []))
       .then((list) => {
-        if (!Array.isArray(list) || !list.length) return;
+        if (!Array.isArray(list)) return;
+        list = list.filter((f) => f.kind !== 'required');
+        if (!list.length) return;
         const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-        tl.innerHTML = list.slice(0, 6).map((f, i) => `<li style="--i:${i}"><a href="/stock/${encodeURIComponent(f.slug)}"><b>${esc(f.name)}</b><small>${f.count} ${f.count === 1 ? 'item' : 'items'}</small></a></li>`).join('');
+        tl.innerHTML = list.slice(0, 6).map((f, i) => `<li style="--i:${i}"><a href="/stock/${encodeURIComponent(f.slug)}"><b>${esc(f.name)}</b><small>${f.count} ${f.count === 1 ? 'item' : 'items'}${f.locked ? ' · protected' : ''}</small></a></li>`).join('');
         tl.hidden = false;
         tl.classList.add('rv-x');
         io ? io.observe(tl) : tl.classList.add('in');

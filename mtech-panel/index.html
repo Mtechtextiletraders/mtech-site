@@ -129,6 +129,14 @@ dialog::backdrop{background:rgba(4,10,34,.55)}
 .padd{aspect-ratio:1;border-radius:12px;border:2px dashed #B8C3E0;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;color:var(--blue);font-weight:600;font-size:13.5px}
 .padd:hover{border-color:var(--blue);background:var(--blue-50)}
 .padd svg{width:26px;height:26px}
+.kind{display:inline-flex;align-items:center;gap:5px;font-family:var(--f-h);font-weight:600;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--orange)}
+.kind svg{width:14px;height:14px}
+select{display:block;width:100%;margin-top:6px;height:46px;padding:0 12px;border:1.5px solid var(--line);border-radius:12px;background:#fff;font-weight:400;font-size:16px}
+.chk{display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px;cursor:pointer}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.sbox{display:flex;gap:12px;align-items:center;margin-top:8px}
+.sbox .pbox{width:90px;aspect-ratio:9/16;border-color:var(--orange)}
+@media (max-width:640px){.two{grid-template-columns:1fr}}
 .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:12px 18px;border-radius:12px;font-weight:600;font-size:14.5px;z-index:100;box-shadow:0 10px 30px -10px rgba(0,0,0,.5)}
 .toast.bad{background:var(--red)}
 @media (max-width:640px){
@@ -177,6 +185,16 @@ dialog::backdrop{background:rgba(4,10,34,.55)}
   <div class="dlg-h"><h2 id="fTitle">New folder</h2><button class="icon-btn" type="button" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M6 6l12 12M18 6 6 18"/></svg></button></div>
   <div class="dlg-b">
     <label>Folder name<input type="text" name="fname" placeholder="e.g. Blowroom, Carding, Ring Frames" required maxlength="80"></label>
+    <div class="two">
+      <label>Shows on the website as
+        <select name="fkind">
+          <option value="lot">For Sale: a lot / stock (sold together, PDF list)</option>
+          <option value="machines">For Sale: single machines (each its own card)</option>
+          <option value="required">Required: machines we want to buy</option>
+        </select>
+      </label>
+      <label>Password for this folder <span class="hint">(leave empty = open to all)</span><input type="text" name="fpw" maxlength="60" autocomplete="off" spellcheck="false"></label>
+    </div>
     <div>
       <p class="sect-t">Which details should each item in this folder have?</p>
       <p class="hint">The first detail is used as the item's name. Tick "Long" for a detail that needs more text, like a description.</p>
@@ -198,11 +216,19 @@ dialog::backdrop{background:rgba(4,10,34,.55)}
   <div class="dlg-h"><h2 id="eTitle">Add item</h2><button class="icon-btn" type="button" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M6 6l12 12M18 6 6 18"/></svg></button></div>
   <div class="dlg-b">
     <div id="eFields" style="display:flex;flex-direction:column;gap:16px"></div>
+    <label>Password for this item <span class="hint">(optional, leave empty = open to all)</span><input type="text" name="epw" maxlength="60" autocomplete="off" spellcheck="false"></label>
     <div>
       <p class="sect-t">Pictures</p>
       <p class="hint">The first picture is the cover. Pictures are resized automatically before upload.</p>
+      <label class="chk" style="margin-top:8px"><input type="checkbox" id="eWm" checked> Add M Tech watermark (logo + 0332-4681423) to new pictures</label>
       <div class="pgrid" id="ePics"></div>
       <input type="file" id="eFile" accept="image/*" multiple hidden>
+    </div>
+    <div id="eStatusWrap">
+      <p class="sect-t">WhatsApp status picture <span class="hint">(optional)</span></p>
+      <p class="hint">A ready 1080×1920 picture for the "Download for WhatsApp Status" button. If empty, the website makes one from the cover picture.</p>
+      <div class="sbox" id="eStatus"></div>
+      <input type="file" id="eSFile" accept="image/*" hidden>
     </div>
   </div>
   <div class="dlg-f">
@@ -225,10 +251,12 @@ dialog::backdrop{background:rgba(4,10,34,.55)}
     left: '<svg viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="m15 6-6 6 6 6"/></svg>',
     right: '<svg viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/></svg>',
     x: '<svg viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M6 6l12 12M18 6 6 18"/></svg>',
+    lock: '<svg viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M6 11h12v9H6zM8.5 11V8a3.5 3.5 0 0 1 7 0v3"/></svg>',
     plus: '<svg viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>',
     ext: '<svg viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M14 4h6v6m0-6-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>',
   };
-  const PRESETS = ['Particulars', 'Qty', 'Year', 'Make', 'Model', 'Condition', 'Description'];
+  const PRESETS = ['Particulars', 'Type', 'Qty', 'Year', 'Make', 'Model', 'Condition', 'Description'];
+  const KIND = { lot: 'Lot / stock', machines: 'Single machines', required: 'Required' };
   const DEFAULT_FIELDS = [{ label: 'Particulars' }, { label: 'Qty' }, { label: 'Year' }, { label: 'Make' }, { label: 'Description', long: true }];
 
   /* ---------- api ---------- */
@@ -281,6 +309,7 @@ dialog::backdrop{background:rgba(4,10,34,.55)}
         <article class="fcard">
           <button class="fcard-img" data-open="${f.id}" aria-label="Open ${esc(f.name)}">${f.cover ? `<img src="/img/${f.cover}" alt="">` : I.img}</button>
           <div class="fcard-b">
+            <span class="kind">${KIND[f.kind] || 'Lot / stock'}${f.pw ? ` · ${I.lock} ${esc(f.pw)}` : ''}</span>
             <h2>${esc(f.name)}</h2>
             <p>${f.count} ${f.count === 1 ? 'item' : 'items'} · ${f.fields.length} details</p>
             <div class="fcard-acts">
@@ -317,6 +346,8 @@ dialog::backdrop{background:rgba(4,10,34,.55)}
     fEditing = f;
     $('#fTitle').textContent = f ? 'Edit folder' : 'New folder';
     $('#fForm').elements.fname.value = f ? f.name : '';
+    $('#fForm').elements.fkind.value = f ? f.kind || 'lot' : 'lot';
+    $('#fForm').elements.fpw.value = f ? f.pw || '' : '';
     fFields = f ? f.fields.map((x) => ({ ...x })) : DEFAULT_FIELDS.map((x) => ({ ...x }));
     $('#fEditNote').hidden = !f;
     showErr($('#fErr'), '');
@@ -363,7 +394,7 @@ dialog::backdrop{background:rgba(4,10,34,.55)}
     }
     const btn = $('#fSave'); btn.disabled = true; showErr($('#fErr'), '');
     try {
-      const body = JSON.stringify({ name, fields });
+      const body = JSON.stringify({ name, fields, kind: e.target.elements.fkind.value, pw: e.target.elements.fpw.value.trim() });
       const f = fEditing ? await api('folders/' + fEditing.id, { method: 'PUT', body }) : await api('folders', { method: 'POST', body });
       dF.close(); toast(fEditing ? 'Folder saved' : 'Folder created');
       if (fEditing) { current ? viewFolder(f.id) : viewFolders(); } else { location.hash = '#/f/' + f.id; }
@@ -381,8 +412,9 @@ dialog::backdrop{background:rgba(4,10,34,.55)}
     const t = (e) => (f.fields[0] && e.data[f.fields[0].id]) || '(no name)';
     const sub = (e) => f.fields.slice(1).filter((x) => !x.long && e.data[x.id]).map((x) => `${x.label}: ${e.data[x.id]}`).join(' · ');
     main.innerHTML = `<div class="crumb"><button type="button" id="back">← All folders</button></div>
-      <div class="bar"><div><h1>${esc(f.name)}</h1><p>${entries.length} ${entries.length === 1 ? 'item' : 'items'} · Details: ${f.fields.map((x) => esc(x.label)).join(', ')}</p></div>
+      <div class="bar"><div><span class="kind">${KIND[f.kind] || 'Lot / stock'}${f.pw ? ` · ${I.lock} Password: ${esc(f.pw)}` : ''}</span><h1>${esc(f.name)}</h1><p>${entries.length} ${entries.length === 1 ? 'item' : 'items'} · Details: ${f.fields.map((x) => esc(x.label)).join(', ')}</p></div>
       <div class="bar-btns">
+        ${!f.wm && entries.some((e) => e.photos.length) ? `<button class="btn btn-ghost" id="wmAll">Add watermark to old pictures</button>` : ''}
         <a class="btn btn-ghost" href="/stock/${encodeURIComponent(f.slug)}" target="_blank" rel="noopener">${I.ext}Website page</a>
         <button class="btn btn-ghost" id="editF">${I.edit}Edit folder</button>
         <button class="btn btn-pri" id="addE">${I.plus}Add item</button>
@@ -390,7 +422,7 @@ dialog::backdrop{background:rgba(4,10,34,.55)}
       ${entries.length ? `<div class="elist">${entries.map((e, i) => `
         <article class="erow">
           <div class="erow-img">${e.photos.length ? `<img src="/img/${e.photos[0]}" alt="">${e.photos.length > 1 ? `<span>${e.photos.length}</span>` : ''}` : I.img}</div>
-          <div class="erow-b"><span class="erow-n">${String(i + 1).padStart(2, '0')}</span><h3>${esc(t(e))}</h3><p>${esc(sub(e)) || '&nbsp;'}</p></div>
+          <div class="erow-b"><span class="erow-n">${String(i + 1).padStart(2, '0')}${e.pw ? ` · ${I.lock} ${esc(e.pw)}` : ''}</span><h3>${esc(t(e))}</h3><p>${esc(sub(e)) || '&nbsp;'}</p></div>
           <div class="erow-acts">
             <button class="icon-btn" data-up="${i}" ${i === 0 ? 'disabled' : ''} aria-label="Move up">${I.up}</button>
             <button class="icon-btn" data-down="${i}" ${i === entries.length - 1 ? 'disabled' : ''} aria-label="Move down">${I.down}</button>
@@ -400,6 +432,7 @@ dialog::backdrop{background:rgba(4,10,34,.55)}
         </article>`).join('')}</div>`
       : `<div class="empty"><p>Nothing in this folder yet.</p><button class="btn btn-pri" id="addE2">${I.plus}Add first item</button></div>`}`;
     $('#back').onclick = () => { location.hash = ''; };
+    if ($('#wmAll')) $('#wmAll').onclick = () => watermarkFolder(f, entries);
     $('#editF').onclick = () => openFolderDialog(f);
     $('#addE').onclick = () => openEntryDialog(null); if ($('#addE2')) $('#addE2').onclick = () => openEntryDialog(null);
     main.querySelectorAll('[data-edit]').forEach((b) => b.onclick = () => openEntryDialog(entries.find((e) => e.id === b.dataset.edit)));
@@ -416,15 +449,58 @@ dialog::backdrop{background:rgba(4,10,34,.55)}
     });
   }
 
+  /* ---------- watermark pictures that were uploaded before watermarks existed ---------- */
+  async function watermarkFolder(f, list) {
+    const total = list.reduce((n, e) => n + e.photos.length, 0);
+    if (!confirm(`Add the M Tech watermark to all ${total} pictures in "${f.name}"?\n\nKeep this page open until it finishes.`)) return;
+    const btn = $('#wmAll'); btn.disabled = true;
+    let done = 0;
+    try {
+      for (const e of list) {
+        if (!e.photos.length) continue;
+        const keys = [];
+        for (const k of e.photos) {
+          const blob = await (await fetch('/img/' + k, { cache: 'no-store' })).blob();
+          const file = new File([blob], 'p.jpg', { type: blob.type || 'image/jpeg' });
+          keys.push(await upload(await shrink(file, 1800, true), () => {}));
+          btn.textContent = `Watermarking… ${++done} / ${total}`;
+        }
+        await api('entries/' + e.id, { method: 'PUT', body: JSON.stringify({ photos: keys }) });
+      }
+      await api('folders/' + f.id, { method: 'PUT', body: JSON.stringify({ wm: true }) });
+      toast('Watermark added to all pictures');
+    } catch (er) { toast('Stopped: ' + (er.message || 'please try again'), true); }
+    viewFolder(f.id);
+  }
+
   /* ---------- entry dialog ---------- */
   const dE = $('#dEntry');
-  let eEditing = null, ePhotos = [], eNew = [], uploading = 0, saved = false;
+  let eEditing = null, ePhotos = [], eNew = [], uploading = 0, saved = false, eStatus = '';
+  function renderStatus() {
+    const b = $('#eStatus');
+    b.innerHTML = (eStatus && typeof eStatus === 'string' ? `<div class="pbox"><img src="/img/${eStatus}" alt=""></div><button type="button" class="btn btn-ghost btn-sm" id="sDel">Remove</button>` : eStatus ? '<div class="pbox up">Uploading…</div>' : '')
+      + `<button type="button" class="btn btn-ghost btn-sm" id="sAdd">${eStatus ? 'Change' : 'Add status picture'}</button>`;
+    $('#sAdd').onclick = () => $('#eSFile').click();
+    if ($('#sDel')) $('#sDel').onclick = () => { eStatus = ''; renderStatus(); };
+  }
+  $('#eSFile').addEventListener('change', async (ev) => {
+    const file = (ev.target.files || [])[0]; ev.target.value = '';
+    if (!file) return;
+    eStatus = { up: true }; uploading++; renderStatus();
+    try { const key = await upload(await shrink(file, 1920, false), () => {}); eStatus = key; eNew.push(key); }
+    catch (er) { eStatus = ''; toast(er.message || 'Upload failed', true); }
+    uploading--; renderStatus();
+  });
   function openEntryDialog(e) {
     eEditing = e; saved = false; eNew = [];
     ePhotos = e ? e.photos.slice() : [];
     $('#eTitle').textContent = e ? 'Edit item' : `Add item to ${current.name}`;
     $('#eFields').innerHTML = current.fields.map((x, i) => `<label>${esc(x.label)}${i === 0 ? ' <span class="hint">(item name)</span>' : ''}
       ${x.long ? `<textarea name="f_${x.id}" maxlength="4000">${esc(e ? e.data[x.id] || '' : '')}</textarea>` : `<input type="text" name="f_${x.id}" maxlength="300" value="${esc(e ? e.data[x.id] || '' : '')}">`}</label>`).join('');
+    $('#eForm').elements.epw.value = e ? e.pw || '' : '';
+    eStatus = e ? e.status_photo || '' : '';
+    $('#eStatusWrap').hidden = current.kind === 'required';
+    renderStatus();
     showErr($('#eErr'), '');
     renderPics();
     dE.showModal();
@@ -448,11 +524,12 @@ dialog::backdrop{background:rgba(4,10,34,.55)}
   }
   $('#eFile').addEventListener('change', async (ev) => {
     const files = Array.from(ev.target.files || []); ev.target.value = '';
+    const wm = $('#eWm').checked;
     for (const file of files) {
       const slot = { preview: URL.createObjectURL(file), p: 5 };
       ePhotos.push(slot); uploading++; renderPics();
       try {
-        const blob = await shrink(file);
+        const blob = await shrink(file, 1800, wm);
         slot.p = 40; renderPics();
         const key = await upload(blob, (p) => { slot.p = 40 + p * 0.6; renderPics(); });
         const i = ePhotos.indexOf(slot); if (i > -1) ePhotos[i] = key;
@@ -464,15 +541,35 @@ dialog::backdrop{background:rgba(4,10,34,.55)}
       URL.revokeObjectURL(slot.preview); uploading--; renderPics();
     }
   });
-  function shrink(file, max = 1800) {
+  /* M Tech watermark: logo with the office number under it, on a soft white card in the bottom-right corner */
+  let logoImg = null;
+  const getLogo = () => logoImg || (logoImg = new Promise((ok, bad) => { const i = new Image(); i.onload = () => ok(i); i.onerror = bad; i.src = '/assets/img/logo.png'; }));
+  async function drawWatermark(ctx, W, H) {
+    const logo = await getLogo();
+    const bw = Math.max(150, W * 0.17), lw = bw * 0.78, lh = lw * logo.height / logo.width;
+    const fs = Math.max(14, Math.round(bw * 0.135)), pad = bw * 0.09;
+    ctx.font = `700 ${fs}px Arial, sans-serif`;
+    const txt = '0332-4681423', tw = ctx.measureText(txt).width;
+    const cw = Math.max(lw, tw) + 2 * pad, ch = pad + lh + pad * 0.55 + fs + pad;
+    const m = W * 0.025, x = W - cw - m, y = H - ch - m, r = bw * 0.09;
+    ctx.save();
+    ctx.fillStyle = 'rgba(255,255,255,.84)';
+    ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + cw, y, x + cw, y + ch, r); ctx.arcTo(x + cw, y + ch, x, y + ch, r); ctx.arcTo(x, y + ch, x, y, r); ctx.arcTo(x, y, x + cw, y, r); ctx.closePath(); ctx.fill();
+    ctx.drawImage(logo, x + (cw - lw) / 2, y + pad, lw, lh);
+    ctx.fillStyle = '#07123A'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    ctx.fillText(txt, x + cw / 2, y + pad + lh + pad * 0.55);
+    ctx.restore();
+  }
+  function shrink(file, max = 1800, wm = false) {
     return new Promise((ok, bad) => {
       const img = new Image(), url = URL.createObjectURL(file);
-      img.onload = () => {
+      img.onload = async () => {
         const s = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
         const c = document.createElement('canvas'); c.width = Math.round(img.naturalWidth * s); c.height = Math.round(img.naturalHeight * s);
         const ctx = c.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height); ctx.drawImage(img, 0, 0, c.width, c.height);
         URL.revokeObjectURL(url);
-        c.toBlob((b) => b ? ok(b) : bad(new Error('Could not read picture')), 'image/jpeg', 0.84);
+        if (wm) { try { await drawWatermark(ctx, c.width, c.height); } catch (e) { /* upload without it */ } }
+        c.toBlob((b) => b ? ok(b) : bad(new Error('Could not read picture')), 'image/jpeg', 0.86);
       };
       img.onerror = () => { URL.revokeObjectURL(url); bad(new Error(`"${file.name}" is not a picture this browser can read`)); };
       img.src = url;
@@ -496,10 +593,10 @@ dialog::backdrop{background:rgba(4,10,34,.55)}
     const photos = ePhotos.filter((k) => typeof k === 'string');
     const btn = $('#eSave'); btn.disabled = true; showErr($('#eErr'), '');
     try {
-      const body = JSON.stringify({ folder_id: current.id, data, photos });
+      const body = JSON.stringify({ folder_id: current.id, data, photos, pw: ev.target.elements.epw.value.trim(), status_photo: typeof eStatus === 'string' ? eStatus : '' });
       if (eEditing) await api('entries/' + eEditing.id, { method: 'PUT', body }); else await api('entries', { method: 'POST', body });
       saved = true;
-      const unused = eNew.filter((k) => !photos.includes(k)); if (unused.length) api('discard', { method: 'POST', body: JSON.stringify({ keys: unused }) }).catch(() => {});
+      const unused = eNew.filter((k) => !photos.includes(k) && k !== eStatus); if (unused.length) api('discard', { method: 'POST', body: JSON.stringify({ keys: unused }) }).catch(() => {});
       dE.close(); toast(eEditing ? 'Item saved' : 'Item added'); viewFolder(current.id);
     } catch (er) { showErr($('#eErr'), er.message); }
     btn.disabled = false;

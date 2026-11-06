@@ -73,7 +73,7 @@ TEAM = [
 BRANDS = ["Rieter", "Trützschler", "Toyota", "Murata", "Schlafhorst", "Savio", "Zinser", "Marzoli", "Suessen", "Saurer",
           "LMW", "Howa", "Ohara", "Crosrol", "Platt", "Volkmann", "SSM", "Hara Shokki", "Jingwei", "Vouk"]
 
-NAV = [("index.html", "Home"), ("about.html", "About"), ("services.html", "Services"), ("stock.html", "Buy & Sell"), ("team.html", "Team"), ("contact.html", "Contact")]
+NAV = [("index.html", "Home"), ("about.html", "About"), ("services.html", "Services"), ("stock.html", "Buy &amp; Sell"), ("team.html", "Team"), ("contact.html", "Contact")]
 
 def clean(path):
     """Cloudflare Pages serves /about.html at /about (308), so public URLs never carry .html."""
@@ -472,7 +472,7 @@ home = f"""
       <p class="sec-sub rv">Stock changes every week. Each department has its own folder with photos and details, and a PDF list you can download.</p>
     </div>
     <ul class="teaser-list" id="stockTeaser" hidden></ul>
-    <div class="teaser-cta rv"><a class="btn btn-pri btn-lg" href="{{rel}}stock.html"><span>View stock</span>{ICON["arr"]}</a></div>
+    <div class="teaser-cta rv"><a class="btn btn-pri btn-lg" href="{{rel}}stock.html"><span>Buy &amp; Sell</span>{ICON["arr"]}</a></div>
   </div>
 </section>
 
