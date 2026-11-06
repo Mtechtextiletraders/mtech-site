@@ -18,10 +18,26 @@ const SCHEMA = [
   `CREATE INDEX IF NOT EXISTS entries_folder ON entries(folder_id, sort, created)`,
 ];
 
+// columns added later (Buy & Sell): folder kind + password + watermark flag, entry password + status picture
+const COLUMNS = {
+  folders: [['kind', "TEXT NOT NULL DEFAULT 'lot'"], ['pw', "TEXT NOT NULL DEFAULT ''"], ['wm', 'INTEGER NOT NULL DEFAULT 0']],
+  entries: [['pw', "TEXT NOT NULL DEFAULT ''"], ['status_photo', "TEXT NOT NULL DEFAULT ''"]],
+};
+const KINDS = ['lot', 'machines', 'required'];
+
 let schemaReady = false;
 async function ensureSchema(env) {
   if (schemaReady) return;
   await env.DB.batch(SCHEMA.map((s) => env.DB.prepare(s)));
+  for (const [table, cols] of Object.entries(COLUMNS)) {
+    const { results } = await env.DB.prepare(`PRAGMA table_info(${table})`).all();
+    const have = new Set(results.map((r) => r.name));
+    for (const [name, def] of cols) {
+      if (!have.has(name)) {
+        try { await env.DB.prepare(`ALTER TABLE ${table} ADD COLUMN ${name} ${def}`).run(); } catch (e) { if (!/duplicate/i.test(String(e && e.message))) throw e; }
+      }
+    }
+  }
   schemaReady = true;
 }
 
@@ -73,9 +89,59 @@ function timingSafeEqual(a, b) {
 async function sha(s) { return b64u(await crypto.subtle.digest('SHA-256', enc.encode(s))); }
 const cookie = (v, maxAge) => `mt_admin=${v}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${maxAge}`;
 
+// ---------------------------------------------------------------- per-item passwords
+// A visitor who enters the right password gets a cookie for that one folder (f) or item (e) for 30 days.
+// The cookie is a signature of the current password, so changing the password locks everyone out again.
+async function unlockSig(env, k, id, pw) {
+  const key = await crypto.subtle.importKey('raw', enc.encode(`${env.ADMIN_PASSWORD || 'mtech'}|mtech-unlock`), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  return b64u(await crypto.subtle.sign('HMAC', key, enc.encode(`${k}:${id}:${pw}`)));
+}
+function readCookie(req, name) {
+  const m = (req.headers.get('cookie') || '').match(new RegExp(`(?:^|;\\s*)${name}=([^;]+)`));
+  return m ? m[1] : null;
+}
+async function isUnlocked(req, env, k, id, pw) {
+  if (!pw) return true;
+  const v = readCookie(req, `mt_u_${k}${id}`);
+  return !!v && timingSafeEqual(v, await unlockSig(env, k, id, pw));
+}
+// access = { admin, folderOpen(f), entryOpen(e, f) }
+function access(req, env, admin) {
+  const memo = new Map();
+  const check = async (k, id, pw) => {
+    if (admin || !pw) return true;
+    const key = k + id;
+    if (!memo.has(key)) memo.set(key, await isUnlocked(req, env, k, id, pw));
+    return memo.get(key);
+  };
+  return {
+    admin,
+    folderOpen: (f) => check('f', f.id, f.pw),
+    entryOpen: async (e, f) => (await check('f', f.id, f.pw)) && check('e', e.id, e.pw),
+  };
+}
+
 // ---------------------------------------------------------------- helpers
-const parseFolder = (r) => r && ({ id: r.id, slug: r.slug, name: r.name, fields: JSON.parse(r.fields || '[]'), sort: r.sort, created: r.created, updated: r.updated });
-const parseEntry = (r) => r && ({ id: r.id, folder_id: r.folder_id, data: JSON.parse(r.data || '{}'), photos: JSON.parse(r.photos || '[]'), sort: r.sort, created: r.created, updated: r.updated });
+const parseFolder = (r) => r && ({ id: r.id, slug: r.slug, name: r.name, kind: KINDS.includes(r.kind) ? r.kind : 'lot', pw: r.pw || '', wm: !!r.wm, fields: JSON.parse(r.fields || '[]'), sort: r.sort, created: r.created, updated: r.updated });
+const parseEntry = (r) => r && ({ id: r.id, folder_id: r.folder_id, data: JSON.parse(r.data || '{}'), photos: JSON.parse(r.photos || '[]'), pw: r.pw || '', status_photo: r.status_photo || '', sort: r.sort, created: r.created, updated: r.updated });
+// what the public sees: never the password; a locked folder/item keeps only its name and a lock flag
+const pubFolder = (f, admin, open) => {
+  const o = { id: f.id, slug: f.slug, name: f.name, kind: f.kind, fields: f.fields, sort: f.sort, updated: f.updated, protected: !!f.pw, locked: !open };
+  if (admin) { o.pw = f.pw; o.wm = f.wm; }
+  return o;
+};
+const pubEntry = (e, f, admin, open, folderOpen = true) => {
+  if (open) {
+    const o = { ...e, protected: !!e.pw, locked: false };
+    if (!admin) delete o.pw;
+    return o;
+  }
+  const first = f.fields[0] && f.fields[0].id;
+  // inside a locked lot nothing leaks; a single locked machine still shows its name
+  const data = folderOpen && first && e.data[first] ? { [first]: e.data[first] } : {};
+  return { id: e.id, folder_id: e.folder_id, data, photos: [], status_photo: '', sort: e.sort, protected: true, locked: true };
+};
+const cleanPw = (p) => String(p == null ? '' : p).trim().slice(0, 60);
 
 function cleanFields(fields) {
   if (!Array.isArray(fields)) return null;
@@ -99,7 +165,10 @@ function cleanData(data, fields) {
   }
   return out;
 }
-const cleanPhotos = (p) => (Array.isArray(p) ? p.filter((k) => typeof k === 'string' && /^p\/[a-z0-9]{6,40}\.(jpg|png|webp)$/.test(k)).slice(0, 40) : []);
+const KEY_RE = /^p\/[a-z0-9]{6,40}\.(jpg|png|webp)$/;
+const cleanPhotos = (p) => (Array.isArray(p) ? p.filter((k) => typeof k === 'string' && KEY_RE.test(k)).slice(0, 40) : []);
+const cleanKey = (k) => (typeof k === 'string' && KEY_RE.test(k) ? k : '');
+const keysOf = (e) => e.photos.concat(e.status_photo ? [e.status_photo] : []);
 
 async function uniqueSlug(env, name, exceptId) {
   const base = slugify(name);
@@ -160,6 +229,25 @@ async function api(req, env, path) {
   if (seg[0] === 'me') return json({ admin: await isAdmin(req, env) });
 
   const admin = await isAdmin(req, env);
+  const acc = access(req, env, admin);
+
+  // visitor unlocks a protected lot (k = "f") or item (k = "e")
+  if (seg[0] === 'unlock' && method === 'POST') {
+    const b = await body();
+    const k = b.k === 'e' ? 'e' : 'f';
+    const id = String(b.id || '').replace(/[^a-z0-9]/g, '').slice(0, 20);
+    const row = await env.DB.prepare(`SELECT id, pw FROM ${k === 'f' ? 'folders' : 'entries'} WHERE id = ?`).bind(id).first();
+    if (!row) return err('Not found.', 404);
+    if (!row.pw) return json({ ok: true });
+    const given = cleanPw(b.password);
+    if (!given || !timingSafeEqual(await sha(given), await sha(row.pw))) {
+      await new Promise((r) => setTimeout(r, 800));
+      return err('Wrong password. Please check and try again.', 401);
+    }
+    const v = await unlockSig(env, k, id, row.pw);
+    return json({ ok: true }, 200, { 'set-cookie': `mt_u_${k}${id}=${v}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${30 * 86400}` });
+  }
+
   const needAdmin = method !== 'GET';
   if (needAdmin && !admin) return err('Please log in again.', 401);
 
@@ -182,13 +270,26 @@ async function api(req, env, path) {
         `SELECT f.*, (SELECT COUNT(*) FROM entries e WHERE e.folder_id = f.id) AS n,
                 (SELECT e.photos FROM entries e WHERE e.folder_id = f.id AND e.photos != '[]' ORDER BY e.sort, e.created LIMIT 1) AS cover
          FROM folders f ORDER BY f.sort, f.name COLLATE NOCASE`).all();
-      return json(results.map((r) => ({ ...parseFolder(r), count: r.n, cover: r.cover ? JSON.parse(r.cover)[0] : null })));
+      const out = [];
+      for (const r of results) {
+        const f = parseFolder(r);
+        const open = await acc.folderOpen(f);
+        out.push({ ...pubFolder(f, admin, open), count: r.n, cover: open && r.cover ? JSON.parse(r.cover)[0] : null });
+      }
+      return json(out);
     }
     if (method === 'GET' && seg[1]) {
       const f = parseFolder(await env.DB.prepare('SELECT * FROM folders WHERE slug = ? OR id = ?').bind(seg[1], seg[1]).first());
       if (!f) return err('Folder not found.', 404);
+      const open = await acc.folderOpen(f);
+      if (!open) {
+        const c = await env.DB.prepare('SELECT COUNT(*) AS n FROM entries WHERE folder_id = ?').bind(f.id).first();
+        return json({ folder: pubFolder(f, admin, false), entries: [], count: (c && c.n) || 0 });
+      }
       const { results } = await env.DB.prepare('SELECT * FROM entries WHERE folder_id = ? ORDER BY sort, created').bind(f.id).all();
-      return json({ folder: f, entries: results.map(parseEntry) });
+      const entries = [];
+      for (const r of results) { const e = parseEntry(r); entries.push(pubEntry(e, f, admin, await acc.entryOpen(e, f))); }
+      return json({ folder: pubFolder(f, admin, true), entries });
     }
     if (method === 'POST' && !seg[1]) {
       const b = await body();
@@ -196,12 +297,13 @@ async function api(req, env, path) {
       const fields = cleanFields(b.fields);
       if (!name) return err('Folder name is required.');
       if (!fields || !fields.length) return err('Add at least one detail field.');
+      const kind = KINDS.includes(b.kind) ? b.kind : 'lot';
       const now = Date.now(), id = rid();
       const slug = await uniqueSlug(env, name);
       const max = await env.DB.prepare('SELECT COALESCE(MAX(sort), 0) AS m FROM folders').first();
-      await env.DB.prepare('INSERT INTO folders (id, slug, name, fields, sort, created, updated) VALUES (?,?,?,?,?,?,?)')
-        .bind(id, slug, name, JSON.stringify(fields), (max.m || 0) + 1, now, now).run();
-      return json(parseFolder(await env.DB.prepare('SELECT * FROM folders WHERE id = ?').bind(id).first()));
+      await env.DB.prepare('INSERT INTO folders (id, slug, name, fields, sort, created, updated, kind, pw, wm) VALUES (?,?,?,?,?,?,?,?,?,?)')
+        .bind(id, slug, name, JSON.stringify(fields), (max.m || 0) + 1, now, now, kind, cleanPw(b.pw), 1).run();
+      return json(pubFolder(parseFolder(await env.DB.prepare('SELECT * FROM folders WHERE id = ?').bind(id).first()), true, true));
     }
     if (method === 'PUT' && seg[1]) {
       const cur = parseFolder(await env.DB.prepare('SELECT * FROM folders WHERE id = ?').bind(seg[1]).first());
@@ -213,13 +315,16 @@ async function api(req, env, path) {
       if (!fields || !fields.length) return err('Add at least one detail field.');
       const slug = name !== cur.name ? await uniqueSlug(env, name, cur.id) : cur.slug;
       const sort = Number.isFinite(b.sort) ? b.sort : cur.sort;
-      await env.DB.prepare('UPDATE folders SET name = ?, slug = ?, fields = ?, sort = ?, updated = ? WHERE id = ?')
-        .bind(name, slug, JSON.stringify(fields), sort, Date.now(), cur.id).run();
-      return json(parseFolder(await env.DB.prepare('SELECT * FROM folders WHERE id = ?').bind(cur.id).first()));
+      const kind = KINDS.includes(b.kind) ? b.kind : cur.kind;
+      const pw = b.pw != null ? cleanPw(b.pw) : cur.pw;
+      const wm = b.wm != null ? (b.wm ? 1 : 0) : (cur.wm ? 1 : 0);
+      await env.DB.prepare('UPDATE folders SET name = ?, slug = ?, fields = ?, sort = ?, kind = ?, pw = ?, wm = ?, updated = ? WHERE id = ?')
+        .bind(name, slug, JSON.stringify(fields), sort, kind, pw, wm, Date.now(), cur.id).run();
+      return json(pubFolder(parseFolder(await env.DB.prepare('SELECT * FROM folders WHERE id = ?').bind(cur.id).first()), true, true));
     }
     if (method === 'DELETE' && seg[1]) {
-      const { results } = await env.DB.prepare('SELECT photos FROM entries WHERE folder_id = ?').bind(seg[1]).all();
-      await deletePhotos(env, results.flatMap((r) => JSON.parse(r.photos || '[]')));
+      const { results } = await env.DB.prepare('SELECT * FROM entries WHERE folder_id = ?').bind(seg[1]).all();
+      await deletePhotos(env, results.flatMap((r) => keysOf(parseEntry(r))));
       await env.DB.batch([
         env.DB.prepare('DELETE FROM entries WHERE folder_id = ?').bind(seg[1]),
         env.DB.prepare('DELETE FROM folders WHERE id = ?').bind(seg[1]),
@@ -234,7 +339,11 @@ async function api(req, env, path) {
       const e = parseEntry(await env.DB.prepare('SELECT * FROM entries WHERE id = ?').bind(seg[1]).first());
       if (!e) return err('Entry not found.', 404);
       const f = parseFolder(await env.DB.prepare('SELECT * FROM folders WHERE id = ?').bind(e.folder_id).first());
-      return json({ entry: e, folder: f });
+      const fOpen = await acc.folderOpen(f);
+      const open = fOpen && await acc.entryOpen(e, f);
+      // which password unlocks it: the lot's first, then the item's own
+      const lock = open ? null : (fOpen ? 'e' : 'f');
+      return json({ entry: pubEntry(e, f, admin, open, fOpen), folder: pubFolder(f, admin, fOpen), lock });
     }
     if (method === 'POST' && !seg[1]) {
       const b = await body();
@@ -244,8 +353,8 @@ async function api(req, env, path) {
       if (!Object.keys(data).length) return err('Fill in at least one detail.');
       const now = Date.now(), id = rid();
       const max = await env.DB.prepare('SELECT COALESCE(MAX(sort), 0) AS m FROM entries WHERE folder_id = ?').bind(f.id).first();
-      await env.DB.prepare('INSERT INTO entries (id, folder_id, data, photos, sort, created, updated) VALUES (?,?,?,?,?,?,?)')
-        .bind(id, f.id, JSON.stringify(data), JSON.stringify(cleanPhotos(b.photos)), (max.m || 0) + 1, now, now).run();
+      await env.DB.prepare('INSERT INTO entries (id, folder_id, data, photos, sort, created, updated, pw, status_photo) VALUES (?,?,?,?,?,?,?,?,?)')
+        .bind(id, f.id, JSON.stringify(data), JSON.stringify(cleanPhotos(b.photos)), (max.m || 0) + 1, now, now, cleanPw(b.pw), cleanKey(b.status_photo)).run();
       await env.DB.prepare('UPDATE folders SET updated = ? WHERE id = ?').bind(now, f.id).run();
       return json(parseEntry(await env.DB.prepare('SELECT * FROM entries WHERE id = ?').bind(id).first()));
     }
@@ -256,19 +365,22 @@ async function api(req, env, path) {
       const b = await body();
       const data = b.data != null ? cleanData(b.data, f.fields) : cur.data;
       const photos = b.photos != null ? cleanPhotos(b.photos) : cur.photos;
+      const status_photo = b.status_photo != null ? cleanKey(b.status_photo) : cur.status_photo;
+      const pw = b.pw != null ? cleanPw(b.pw) : cur.pw;
       const sort = Number.isFinite(b.sort) ? b.sort : cur.sort;
       if (!Object.keys(data).length) return err('Fill in at least one detail.');
-      await deletePhotos(env, cur.photos.filter((k) => !photos.includes(k)));
+      const keep = new Set(photos.concat(status_photo ? [status_photo] : []));
+      await deletePhotos(env, keysOf(cur).filter((k) => !keep.has(k)));
       const now = Date.now();
-      await env.DB.prepare('UPDATE entries SET data = ?, photos = ?, sort = ?, updated = ? WHERE id = ?')
-        .bind(JSON.stringify(data), JSON.stringify(photos), sort, now, cur.id).run();
+      await env.DB.prepare('UPDATE entries SET data = ?, photos = ?, status_photo = ?, pw = ?, sort = ?, updated = ? WHERE id = ?')
+        .bind(JSON.stringify(data), JSON.stringify(photos), status_photo, pw, sort, now, cur.id).run();
       await env.DB.prepare('UPDATE folders SET updated = ? WHERE id = ?').bind(now, f.id).run();
       return json(parseEntry(await env.DB.prepare('SELECT * FROM entries WHERE id = ?').bind(cur.id).first()));
     }
     if (method === 'DELETE' && seg[1]) {
       const cur = parseEntry(await env.DB.prepare('SELECT * FROM entries WHERE id = ?').bind(seg[1]).first());
       if (!cur) return json({ ok: true });
-      await deletePhotos(env, cur.photos);
+      await deletePhotos(env, keysOf(cur));
       await env.DB.prepare('DELETE FROM entries WHERE id = ?').bind(cur.id).run();
       return json({ ok: true });
     }
@@ -279,8 +391,8 @@ async function api(req, env, path) {
     const { keys } = await body();
     const ks = cleanPhotos(keys);
     if (ks.length) {
-      const { results } = await env.DB.prepare('SELECT photos FROM entries').all();
-      const used = new Set(results.flatMap((r) => JSON.parse(r.photos || '[]')));
+      const { results } = await env.DB.prepare('SELECT * FROM entries').all();
+      const used = new Set(results.flatMap((r) => keysOf(parseEntry(r))));
       await deletePhotos(env, ks.filter((k) => !used.has(k)));
     }
     return json({ ok: true });
@@ -427,14 +539,21 @@ async function stockPage(req, env, url, parts) {
     const nf = await env.ASSETS.fetch(new Request(new URL('/404', url), req));
     return new Response(nf.body, { status: 404, headers: nf.headers });
   }
-  let title = `${f.name} | Stock | M Tech Textile Traders`;
-  let desc = `${f.name} in stock with M Tech Textile Traders: pictures and details of every item.`;
+  const acc = access(req, env, await isAdmin(req, env));
+  const fOpen = await acc.folderOpen(f);
+  const label = f.kind === 'required' ? 'Required' : f.kind === 'machines' ? 'For Sale' : 'Lot';
+  let title = `${f.name} | Buy & Sell | M Tech Textile Traders`;
+  let desc = f.kind === 'required'
+    ? `Machinery M Tech Textile Traders is looking to buy: ${f.name}.`
+    : `${f.name} for sale with M Tech Textile Traders: pictures and details of every item.`;
   // the visible heading is written on the server too, so the page does not jump when stock.js fills it in
   let h1 = f.name, crumb = f.name, lead = null, eyebrow = null;
+  let noindex = !!f.pw;
   if (parts.length === 1) {
     const c = await env.DB.prepare('SELECT COUNT(*) AS n FROM entries WHERE folder_id = ?').bind(f.id).first();
     const n = (c && c.n) || 0;
-    lead = n ? `${n} ${n === 1 ? 'item' : 'items'} in stock. Open any item to see all its pictures, or download the full list as a PDF.` : 'This folder is empty right now.';
+    lead = !fOpen ? 'This lot is password protected. Enter the password you received from M Tech to see it.'
+      : n ? `${n} ${n === 1 ? 'item' : 'items'}. Open any item to see all its pictures${f.kind === 'lot' ? ', or download the full list as a PDF' : ''}.` : 'This folder is empty right now.';
   }
   if (parts.length > 1) {
     const e = parseEntry(await env.DB.prepare('SELECT * FROM entries WHERE id = ? AND folder_id = ?').bind(parts[1], f.id).first());
@@ -442,11 +561,15 @@ async function stockPage(req, env, url, parts) {
       const nf = await env.ASSETS.fetch(new Request(new URL('/404', url), req));
       return new Response(nf.body, { status: 404, headers: nf.headers });
     }
-    const name = e.data[f.fields[0] && f.fields[0].id] || f.name;
+    const open = fOpen && await acc.entryOpen(e, f);
+    const name = (fOpen && e.data[f.fields[0] && f.fields[0].id]) || (fOpen ? f.name : 'Protected item');
     title = `${name} | ${f.name} | M Tech Textile Traders`;
-    h1 = crumb = name; eyebrow = f.name;
-    lead = e.photos.length ? `${e.photos.length} ${e.photos.length === 1 ? 'picture' : 'pictures'}` : 'Pictures available on request.';
-    desc = f.fields.filter((x) => e.data[x.id] && !x.long).map((x) => `${x.label}: ${e.data[x.id]}`).join(' · ').slice(0, 300) || desc;
+    h1 = crumb = name; eyebrow = f.kind === 'lot' ? f.name : label;
+    if (!open) { lead = 'Password protected.'; noindex = true; }
+    else {
+      lead = e.photos.length ? `${e.photos.length} ${e.photos.length === 1 ? 'picture' : 'pictures'}` : 'Pictures available on request.';
+      desc = f.fields.filter((x) => e.data[x.id] && !x.long).map((x) => `${x.label}: ${e.data[x.id]}`).join(' · ').slice(0, 300) || desc;
+    }
   }
   return new HTMLRewriter()
     .on('title', { element(el) { el.setInnerContent(title); } })
@@ -460,6 +583,7 @@ async function stockPage(req, env, url, parts) {
     .on('#stkLead', { element(el) { if (lead !== null) el.setInnerContent(lead); } })
     .on('#stkEyebrow', { element(el) { if (eyebrow !== null) el.setInnerContent(String(eyebrow)); } })
     .on('#stkFolderLink', { element(el) { if (eyebrow !== null) { el.setInnerContent(String(f.name)); el.setAttribute('href', `/stock/${encodeURIComponent(f.slug)}`); } } })
+    .on('head', { element(el) { if (noindex) el.append('<meta name="robots" content="noindex">', { html: true }); } })
     .transform(new Response(res.body, { status: 200, headers: res.headers }));
 }
 

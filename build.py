@@ -73,7 +73,7 @@ TEAM = [
 BRANDS = ["Rieter", "Trützschler", "Toyota", "Murata", "Schlafhorst", "Savio", "Zinser", "Marzoli", "Suessen", "Saurer",
           "LMW", "Howa", "Ohara", "Crosrol", "Platt", "Volkmann", "SSM", "Hara Shokki", "Jingwei", "Vouk"]
 
-NAV = [("index.html", "Home"), ("about.html", "About"), ("services.html", "Services"), ("stock.html", "Stock"), ("team.html", "Team"), ("contact.html", "Contact")]
+NAV = [("index.html", "Home"), ("about.html", "About"), ("services.html", "Services"), ("stock.html", "Buy & Sell"), ("team.html", "Team"), ("contact.html", "Contact")]
 
 def clean(path):
     """Cloudflare Pages serves /about.html at /about (308), so public URLs never carry .html."""
@@ -174,7 +174,7 @@ def footer(rel):
     <div><h2 class="ftr-h">Services</h2><ul>{svc}</ul></div>
     <div><h2 class="ftr-h">Company</h2><ul>
       <li><a href="{rel}about.html">About M Tech</a></li>
-      <li><a href="{rel}stock.html">Stock</a></li>
+      <li><a href="{rel}stock.html">Buy &amp; Sell</a></li>
       <li><a href="{rel}team.html">Our team</a></li>
       <li><a href="{CEO_SITE}/" target="_blank" rel="noopener">Abdul Rasheed Gill, CEO</a></li>
       <li><a href="{rel}contact.html">Contact</a></li></ul></div>
@@ -829,21 +829,36 @@ def stock_head(crumbs_html, eyebrow, title_html, lead_html, actions=""):
 STOCK_SCRIPTS = '<script src="{rel}' + V('js/stock.js') + '" defer></script>'
 PDF_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19h14"/></svg>'
 
-stock_index = stock_head('<a href="{rel}index.html">Home</a> <span aria-hidden="true">/</span> <span aria-current="page">Stock</span>',
-    "Stock", 'What we have <em>in stock.</em>',
-    "What we have right now, department by department. Open a folder for pictures and details of every item, or download its stock list as a PDF.") + f'''
+LOCK_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M6 11h12v9H6zM8.5 11V8a3.5 3.5 0 0 1 7 0v3"/></svg>'
+
+stock_index = stock_head('<a href="{rel}index.html">Home</a> <span aria-hidden="true">/</span> <span aria-current="page">Buy &amp; Sell</span>',
+    "Buy &amp; Sell", 'Machinery <em>for sale,</em> and what we need.',
+    "Machines and complete lots we have for sale, with pictures, details and PDF lists. On the Required tab: machines we are looking to buy.") + f'''
 <section class="sec stk-sec">
   <div class="wrap">
-    <div class="stk-folders" id="stkFolders" aria-live="polite">
-      <div class="stk-skel"></div><div class="stk-skel"></div><div class="stk-skel"></div>
+    <div class="stk-tabs" role="tablist" aria-label="Buy and sell">
+      <button type="button" role="tab" id="tabSale" aria-controls="pSale" aria-selected="true">For Sale</button>
+      <button type="button" role="tab" id="tabReq" aria-controls="pReq" aria-selected="false" tabindex="-1">Required</button>
+    </div>
+    <div id="pSale" role="tabpanel" aria-labelledby="tabSale">
+      <div class="stk-sub" id="hMachines" hidden><h2 class="h3">Machines</h2><p>Single machines, each with its own pictures.</p></div>
+      <div class="stk-items" id="stkMachines" aria-live="polite" hidden></div>
+      <div class="stk-sub" id="hLots"><h2 class="h3">Lots &amp; stocks</h2><p>Complete lots sold together, with a full PDF list.</p></div>
+      <div class="stk-folders" id="stkFolders" aria-live="polite">
+        <div class="stk-skel"></div><div class="stk-skel"></div><div class="stk-skel"></div>
+      </div>
+    </div>
+    <div id="pReq" role="tabpanel" aria-labelledby="tabReq" hidden>
+      <div class="stk-sub"><h2 class="h3">Machines we are looking for</h2><p>Have one of these? Send pictures and details on WhatsApp and we will get back to you.</p></div>
+      <div class="stk-items" id="stkRequired" aria-live="polite"><div class="stk-skel"></div></div>
     </div>
   </div>
 </section>
 ''' + cta_band("Need something <em>that isn't listed?</em>", "Stock changes every week. Tell us what you're looking for and we'll check the godown and ask around our network.", img="winding")
 
-stock_folder = stock_head('<a href="/index.html">Home</a> <span aria-hidden="true">/</span> <a href="/stock.html">Stock</a> <span aria-hidden="true">/</span> <span aria-current="page" id="stkCrumb">Folder</span>',
-    "Stock", '<span id="stkTitle">Loading</span>', '<span id="stkLead">Pictures and details of every item in this folder.</span>',
-    f'<div class="stk-actions"><button class="btn btn-pri btn-lg" id="stkPdf" type="button" disabled>{PDF_ICON}<span>Download PDF</span></button><a class="btn btn-line btn-lg" href="/stock.html"><span>All folders</span></a></div>') + '''
+stock_folder = stock_head('<a href="/index.html">Home</a> <span aria-hidden="true">/</span> <a href="/stock.html">Buy &amp; Sell</a> <span aria-hidden="true">/</span> <span aria-current="page" id="stkCrumb">Folder</span>',
+    "Buy &amp; Sell", '<span id="stkTitle">Loading</span>', '<span id="stkLead">Pictures and details of every item in this folder.</span>',
+    f'<div class="stk-actions"><button class="btn btn-pri btn-lg" id="stkPdf" type="button" disabled>{PDF_ICON}<span>Download PDF</span></button><a class="btn btn-line btn-lg" href="/stock.html"><span>Buy &amp; Sell</span></a></div>') + '''
 <section class="sec stk-sec">
   <div class="wrap">
     <div class="stk-items" id="stkItems" aria-live="polite">
@@ -853,15 +868,22 @@ stock_folder = stock_head('<a href="/index.html">Home</a> <span aria-hidden="tru
 </section>
 ''' + cta_band("Interested in something <em>from this list?</em>", "Call or WhatsApp us with the item name. Godown visits are by appointment.", img="winding")
 
-stock_item = stock_head('<a href="/index.html">Home</a> <span aria-hidden="true">/</span> <a href="/stock.html">Stock</a> <span aria-hidden="true">/</span> <a href="/stock.html" id="stkFolderLink">Folder</a> <span aria-hidden="true">/</span> <span aria-current="page" id="stkCrumb">Item</span>',
-    '<span id="stkEyebrow">Stock</span>', '<span id="stkTitle">Loading</span>', '<span id="stkLead"></span>') + f'''
+DL_ICON = PDF_ICON
+COPY_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M9 9h10v11H9zM5 15V4h10"/></svg>'
+STATUS_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M8 3h8a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm4 5v7m0 0-3-3m3 3 3-3"/></svg>'
+
+stock_item = stock_head('<a href="/index.html">Home</a> <span aria-hidden="true">/</span> <a href="/stock.html">Buy &amp; Sell</a> <span aria-hidden="true">/</span> <a href="/stock.html" id="stkFolderLink">Folder</a> <span aria-hidden="true">/</span> <span aria-current="page" id="stkCrumb">Item</span>',
+    '<span id="stkEyebrow">Buy &amp; Sell</span>', '<span id="stkTitle">Loading</span>', '<span id="stkLead"></span>') + f'''
 <section class="sec stk-sec">
   <div class="wrap stk-detail" id="stkDetail">
     <div class="stk-gallery" id="stkGallery"><div class="stk-skel tall"></div></div>
-    <aside class="stk-info">
+    <aside class="stk-info" id="stkInfo">
       <dl class="stk-dl" id="stkDl"></dl>
       <div class="stk-info-btns">
         <a class="btn btn-wa btn-lg" id="stkAsk" href="{wa_link()}" target="_blank" rel="noopener">{ICON["wa"]}<span>Ask about this item</span></a>
+        <button class="btn btn-pri btn-lg" id="stkStatus" type="button" hidden>{STATUS_ICON}<span>Download for WhatsApp Status</span></button>
+        <button class="btn btn-line btn-lg" id="stkAll" type="button" hidden>{DL_ICON}<span>Download all pictures</span></button>
+        <button class="btn btn-line btn-lg" id="stkCopy" type="button" hidden>{COPY_ICON}<span>Copy details</span></button>
         <a class="btn btn-line btn-lg" id="stkBack" href="/stock.html"><span>Back to folder</span></a>
       </div>
     </aside>
@@ -940,8 +962,8 @@ SEO = {
                                          "Spinning mill sale and purchase in Pakistan: buy or sell a complete mill or unit with M Tech, with brokerage, machinery valuation and new mill setup advice."),
     "team.html": ("Our Team | M Tech Textile Traders, Lahore & Faisalabad",
                   "Meet Abdul Rasheed Gill, founder of M Tech Textile Traders, and his four sons who run the Lahore office and Faisalabad warehouse of the textile machinery firm."),
-    "stock.html": ("Used Machinery in Stock, Faisalabad | M Tech Textile Traders",
-                   "Used textile and spinning machinery in stock with M Tech Textile Traders, by department: pictures, details and PDF stock lists. Godown in Faisalabad."),
+    "stock.html": ("Buy & Sell Used Spinning Machinery | M Tech Textile Traders",
+                   "Used spinning and textile machinery for sale with M Tech Textile Traders, complete lots with PDF lists, and the machines we want to buy. Lahore and Faisalabad."),
     "contact.html": ("Contact M Tech Textile Traders | Lahore 0332-4681423",
                      "Call or WhatsApp M Tech Textile Traders on 0332-4681423. Head office in Manga Mandi, Lahore; machinery warehouse in Darul Ehsan Town, Faisalabad."),
 }
@@ -1141,7 +1163,7 @@ def build():
     top("team.html", "AboutPage", team, "Team")
     for t in TEAM:
         member_page(t)
-    top("stock.html", "CollectionPage", stock_index, "Stock", scripts=STOCK_SCRIPTS)
+    top("stock.html", "CollectionPage", stock_index, "Buy & Sell", scripts=STOCK_SCRIPTS)
     page("stock-folder.html", "Stock | M Tech Textile Traders", "Stock with pictures and details.", stock_folder, active="stock.html", rel="/", scripts=STOCK_SCRIPTS, sitemap=False, bodycls="stk-page")
     page("stock-item.html", "Stock | M Tech Textile Traders", "Stock with pictures and details.", stock_item, active="stock.html", rel="/", scripts=STOCK_SCRIPTS, sitemap=False, bodycls="stk-page")
     top("contact.html", "ContactPage", contact, "Contact", nodes=(BUSINESS,))
